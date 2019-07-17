@@ -1,0 +1,15 @@
+# $Id: local.rules,v 1.11 2004/07/23 20:15:44 bmc Exp $
+# ----------------
+# LOCAL RULES
+# ----------------
+# This file intentionally does not come with signatures.  Put your local
+# additions here.
+
+pass tcp any 587 <> LANDMINE_IP any (msg: "SMTP"; sid:10000003;)
+pass udp LANDMINE_IP 123 <> NTP_SERVER 123 (msg: "NTP"; sid:10000004;)
+pass udp DHCP_SERVER 67 -> LANDMINE_IP 68 (msg: "DHCP"; sid:10000008;)
+pass udp DNS_SERVER 53 -> LANDMINE_IP any (msg: "DNS"; sid:10000009;)
+
+alert ip LANDMINE_IP any -> any any (msg: "Unexpected packet"; sid:20000001;)
+alert ip any any -> LANDMINE_IP any (msg: "Unexpected packet"; sid:20000002;)
+
