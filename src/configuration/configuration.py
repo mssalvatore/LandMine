@@ -2,15 +2,86 @@ import configobj
 from configobj import ConfigObj
 from validate import Validator
 import os
+import re
+from socket import AddressFamily
 
 class ConfigurationError(Exception):
     pass
+
+def objects_from_comma_separated_list(config_csv, callback):
+    objects = list()
+    for value in config_csv.split(','):
+        objects.append(callback(value))
+
+    return objects
+
+class EmailRecipient:
+    def __init__(self, email_address, days, hours):
+        # TODO: Validate
+        self.email_address = email_address
+        self.days = days
+        self.hours = hours
+
+    def __str__(self):
+        recipient_str = self.email_address
+        if self.days:
+            recipient_str = recipient_str + " - " + self.days
+        if self.hours:
+            recipient_str = recipient_str + " - " + self.hours
+        return recipient_str
+
+def email_recipients_from_config_list(config_csv):
+    return objects_from_comma_separated_list(config_csv, email_recipient_from_config_str)
+
+def email_recipient_from_config_str(config_str):
+    # TODO: Validate
+    match = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:([0-6]-[0-6]))?(:(\d{1,2}-\d{1,2}))?", config_str)
+    if match:
+        email_address = match.group(1)
+        days = match.group(3)
+        hours = match.group(5)
+        return EmailRecipient(email_address, days, hours)
+    else:
+        pass
+        # TODO: raise exception
+
+
+class NetworkInterface:
+    def __init__(self, interface, address_family):
+        self.interface = interface
+        self.address_family = address_family
+
+    def __str__(self):
+        af = "IPv4"
+        if self.address_family == AddressFamily.AF_INET6:
+            af = "IPv6"
+        return self.interface + " - " + af
+
+def network_interfaces_from_config_list(config_csv):
+    return objects_from_comma_separated_list(config_csv, network_interface_from_config_str)
+
+def network_interface_from_config_str(config_str):
+    match = re.match(r"(.+):(IPv4|IPv6)", config_str)
+    if match:
+        interface = match.group(1)
+        if match.group(2) == "IPv4":
+            address_family = AddressFamily.AF_INET
+        elif match.group(2) == "IPv6":
+            address_family = AddressFamily.AF_INET6
+        else:
+            pass
+            # TODO: raise exception
+
+        return NetworkInterface(interface, address_family)
+    else:
+        pass
+        # TODO: raise exception
+
 
 # TODO: Call validator functions from set_*() methods
 class Configuration:
     def __init__(self, config_file_path="./config.ini"):
         self.config_file = config_file_path
-        #self.config = ConfigObj(configspec="./configspec.ini", list_values=True, raise_errors=True)
         self.config = ConfigObj(self.config_file, configspec="./configspec.ini", list_values=True, raise_errors=True)
         self.validator = Validator()
         
@@ -32,23 +103,50 @@ class Configuration:
     def set_snort_log_path(self, log_path):
         self.config['Monitoring']['snort_log'] = log_path
 
+    def get_snort_log_path(self):
+        return self.config['Monitoring']['snort_logfile']
+
     def set_landmine_log_path(self, log_path):
         self.config['Logging']['landmine_log'] = log_path
+
+    def get_landmine_log_path(self):
+        return self.config['Logging']['landmine_log']
 
     def set_smtp_server(self, server):
         self.config['Alerting']['smtp_server'] = server
 
+    def get_smtp_server(self):
+        return self.config['Alerting']['smtp_server']
+
     def set_smtp_port(self, port):
         self.config['Alerting']['smtp_port'] = port
+
+    def get_smtp_port(self):
+        return self.config['Alerting']['smtp_port']
 
     def set_smtp_username(self, username):
         self.config['Alerting']['smtp_username'] = username
 
+    def get_smtp_username(self):
+        return self.config['Alerting']['smtp_username']
+
     def set_smtp_password(self, password):
         self.config['Alerting']['smtp_password'] = password
 
+    def get_smtp_password(self):
+        return self.config['Alerting']['smtp_password']
+
     def set_alert_recipients(self, recipients):
         self.config['Alerting']['Recipients'] = recipients
+
+    def get_alert_recipients(self):
+        return email_recipients_from_config_list(self.config['Alerting']['recipients'])
+
+    def set_network_interfaces(self, interfaces):
+        self.config['Monitoring']['network_interfaces'] = interfaces
+
+    def get_network_interfaces(self):
+        return network_interfaces_from_config_list(self.config['Monitoring']['network_interfaces'])
  
     def save_config(self):
         try:
