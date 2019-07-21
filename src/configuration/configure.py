@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import configparser
+from configuration import Configuration
 from dialog import Dialog
 import dialog_constants as dc
 import psutil
@@ -9,28 +9,31 @@ from socket import AddressFamily
 import sys
 
 
-# TODO: Encapsulate this somehow
-config = configparser.ConfigParser()
-config['Logging'] = {"landmine_log": "/var/snap/current/common/landmine.log",
-                     "snort_log": "DUMMY_VALUE"}
+config = Configuration()
 
 def loop_dialog(d, dialog_callback, extra_callback=None, cancel_callback=None):
     show_dialog = True
     
     while show_dialog:
-        code, tag = dialog_callback(d)
+        try:
+            code, tag = dialog_callback(d)
 
-        if code == d.OK:
-            dialog_callbacks[tag](d)
-        if code == d.EXTRA:
-            if extra_callback is not None:
-                extra_callback(d)
-                #TODO: else raise exception
-        if code in (d.CANCEL, d.ESC):
-            # TODO: Check for unsaved changes and warn about discarding changes
-            if cancel_callback is not None:
-                cancel_callback()
-            show_dialog = False
+            if code == d.OK:
+                dialog_callbacks[tag](d)
+            if code == d.EXTRA:
+                if extra_callback is not None:
+                    extra_callback(d)
+                    #TODO: else raise exception
+            if code in (d.CANCEL, d.ESC):
+                # TODO: Check for unsaved changes and warn about discarding changes
+                if cancel_callback is not None:
+                    cancel_callback()
+                show_dialog = False
+        except Exception as ex:
+            show_exception_msg(d, ex)
+
+def show_exception_msg(d, ex):
+    d.msgbox("An error occurred while trying to save the configuration:\n\n%s" % str(ex), title="Error", height=10, width=72)
         
 def main():
     d = Dialog(autowidgetsize=True)
@@ -85,7 +88,7 @@ def smtp_dialog(d):
                        dc.smtp_menu_fields,
                        title=dc.smtp_menu_title,
                        backtitle=dc.smtp_menu_backtitle,
-                       extra_button=True, extra_label="Set Password")
+                       extra_button=True, extra_label="Set Password", insecure=True)
 
 def store_smtp_password(d):
         password = show_smtp_password_dialog(d, fields[0], fields[2])
@@ -134,15 +137,10 @@ def show_logging_dialog(d):
 
     #TODO: Validate path
     if code == d.OK:
-        # TODO: Store choices
-        config["Logging"]["landmine_log"] = user_input
-
+        config.set_landmine_log_path(user_input)
 
 def save_config(d):
-    cfgfile = open("./save.ini", "w")
-    config.write(cfgfile)
-    cfgfile.close
-
+    config.save_config()
 
 dialog_callbacks = {dc.NETWORK_MENU: show_network_dialog,
                     dc.EMAIL_MENU: show_email_dialog,
