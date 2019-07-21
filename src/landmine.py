@@ -7,6 +7,8 @@ import smtplib
 import subprocess
 import time
 
+config = Configuration("./config.ini")
+
 rule_id_regex = re.compile(r"\[\d+:(\d+):\d+\]")
 def parse_rule_id(alert_lines):
     matches = rule_id_regex.search(alert_lines[0]);
@@ -39,9 +41,9 @@ def parse_protocol(alert_lines):
 def send_email(to, message):
     logging.debug("Sending email to %s" % to);
     logging.debug("Message: \n%s" %message);
-    s = smtplib.SMTP(host="", port=587)
+    s = smtplib.SMTP(host=config.get_smtp_host, port=config.get_smtp_port)
     s.starttls()
-    s.login("", "")
+    s.login(config.get_smtp_username, config.get_smtp_password)
 
     from_address = ""
     subject = "Snort Alert!"
@@ -54,6 +56,7 @@ def send_email(to, message):
 email_address = ""
 sms_email_address = ""
 def email_alert(alert_lines):
+    # TODO: Send one email to each recipient, observing any time constraints
     logging.info("Sending email with alert details")
     timestamp = parse_timestamp(alert_lines)
     rule_id = parse_rule_id(alert_lines)
@@ -111,10 +114,12 @@ def process_alert(alert_text):
     else:
         logging.warning("Not sending alerts: Sent count and sent time thresholds are exceeded. ")
 
-logging.basicConfig(format='%(asctime)s -- %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename='/var/log/snort/landmine.log', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s -- %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename=config.get_landmine_log_path, level=logging.DEBUG)
 
-f = subprocess.Popen(['tail', '-F', '-n', '0', "/var/log/snort/alert"],\
+f = subprocess.Popen(['tail', '-F', '-n', '0', config.get_snort_log_path],\
         stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+
+# TODO: On start, read network interface settings and build snort rule set, then restart snort
 while True:
     alert_text = ""
     line = f.stdout.readline().decode("utf-8")
