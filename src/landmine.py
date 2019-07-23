@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from configuration.configuration import Configuration
 import datetime
 import logging
 import re
@@ -41,9 +42,9 @@ def parse_protocol(alert_lines):
 def send_email(to, message):
     logging.debug("Sending email to %s" % to);
     logging.debug("Message: \n%s" %message);
-    s = smtplib.SMTP(host=config.get_smtp_host, port=config.get_smtp_port)
+    s = smtplib.SMTP(host=config.get_smtp_server(), port=config.get_smtp_port())
     s.starttls()
-    s.login(config.get_smtp_username, config.get_smtp_password)
+    s.login(config.get_smtp_username(), config.get_smtp_password())
 
     from_address = ""
     subject = "Snort Alert!"
@@ -53,10 +54,26 @@ def send_email(to, message):
     except SMTPException as e:
         logging.error("Caught SMTP exception: %s" % (str(e)))
 
+def within_time_window(current_time, recipient):
+    if recipient.days_min == '*' and recipient.hours_min == '*':
+        return True
+
+    if recipient.days_min == '*' and recipient.hours_min <= current_time.hour and current_time.hour <= recipient.hours_max:
+          return True
+
+    if (recipient.days_min <= current_time.weekday() and current_time.weekday() <= recipient.days_max
+          and recipient.hours_min == '*' ):
+            return True
+
+    if (recipient.days_min <= current_time.weekday() and current_time.weekday() <= recipient.days_max
+          and recipient.hours_min <= current_time.hour and current_time.hour <= recipient.hours_max):
+            return True
+
+    return False
+
 email_address = ""
 sms_email_address = ""
 def email_alert(alert_lines):
-    # TODO: Send one email to each recipient, observing any time constraints
     logging.info("Sending email with alert details")
     timestamp = parse_timestamp(alert_lines)
     rule_id = parse_rule_id(alert_lines)
@@ -64,34 +81,35 @@ def email_alert(alert_lines):
     protocol = parse_protocol(alert_lines)
     packet_header_info = parse_packet_ip_port_direction(alert_lines)
 
-    message = ("From: \n"
-               "To: \n"
-               "Subject: LandMine Alert!\n\n"
-               " Timestamp: " + timestamp + "\n"
-               " Rule ID:" + rule_id + "\n"
-               " Message: " + alert_msg + "\n"
-               " Protocol: " + protocol + "\n"
-               " Packet Data:" + packet_header_info + "\n"
-              )
+    for r in config.get_alert_recipients():
+        message = ("From: \n"
+                   "To: " + r.email_address + "\n"
+                   "Subject: LandMine Alert!\n\n"
+                   " Timestamp: " + timestamp + "\n"
+                   " Rule ID:" + rule_id + "\n"
+                   " Message: " + alert_msg + "\n"
+                   " Protocol: " + protocol + "\n"
+                   " Packet Data:" + packet_header_info + "\n"
+                  )
 
-    send_email(email_address, message)
-    now = datetime.datetime.now()
-    if now.hour >= 9 and now.hour <= 21: # FIX HARD CODED VALUES
-        send_email(sms_email_address, message)
+        now = datetime.datetime.now()
 
+        if within_time_window(now, r):
+            send_email(r.email_address, message)
 
 def email_threshold_exceeded_alert():
     logging.info("Email threshold exceeded, sending corresponding message.")
-    message = ("From: \n"
-               "To: \n"
-               "Subject: LandMine Alert!\n\n"
-               " Email alert threshold exceeded. See /var/log/snort/alert for more info.\n"
-              )
+    for r in config.get_alert_recipients():
+        message = ("From: \n"
+                   "To: " + r.email_address + "\n"
+                   "Subject: LandMine Alert!\n\n"
+                   " Email alert threshold exceeded. See /var/log/snort/alert for more info.\n"
+                  )
 
-    send_email(email_address, message)
-    now = datetime.datetime.now()
-    if now.hour >= 9 and now.hour <= 21: # FIX HARD CODED VALUES
-        send_email(sms_email_address, message)
+        now = datetime.datetime.now()
+
+        if within_time_window(now, r):
+            send_email(r.email_address, message)
 
 last_sent_time = 0
 last_sent_timeout = 600
@@ -114,10 +132,10 @@ def process_alert(alert_text):
     else:
         logging.warning("Not sending alerts: Sent count and sent time thresholds are exceeded. ")
 
-logging.basicConfig(format='%(asctime)s -- %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename=config.get_landmine_log_path, level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s -- %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename=config.get_landmine_log_path(), level=logging.DEBUG)
 
-f = subprocess.Popen(['tail', '-F', '-n', '0', config.get_snort_log_path],\
-        stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+f = subprocess.Popen(['tail', '-F', '-n', '0', config.get_snort_log_path()],\
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 # TODO: On start, read network interface settings and build snort rule set, then restart snort
 while True:

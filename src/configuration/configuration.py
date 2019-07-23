@@ -19,27 +19,32 @@ class EmailRecipient:
     def __init__(self, email_address, days, hours):
         # TODO: Validate
         self.email_address = email_address
-        self.days = days
-        self.hours = hours
 
-    def __str__(self):
-        recipient_str = self.email_address
-        if self.days:
-            recipient_str = recipient_str + " - " + self.days
-        if self.hours:
-            recipient_str = recipient_str + " - " + self.hours
-        return recipient_str
+        if days is None or days == '*':
+            self.days_min = '*'
+            self.days_max = '*'
+        else:
+            self.days_min = int(days.split('-')[0].strip())
+            self.days_max = int(days.split('-')[1].strip())
+
+        print(hours)
+        if hours is None or hours == '*':
+            self.hours_min = '*'
+            self.hours_max = '*'
+        else:
+            self.hours_min = int(hours.split('-')[0].strip())
+            self.hours_max = int(hours.split('-')[1].strip())
 
 def email_recipients_from_config_list(config_csv):
     return objects_from_comma_separated_list(config_csv, email_recipient_from_config_str)
 
 def email_recipient_from_config_str(config_str):
     # TODO: Validate
-    match = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:([0-6]-[0-6]))?(:(\d{1,2}-\d{1,2}))?", config_str)
+    match = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:(([0-6]-[0-6])|\*))?(:((\d{1,2}-\d{1,2})|\*))?", config_str)
     if match:
         email_address = match.group(1)
         days = match.group(3)
-        hours = match.group(5)
+        hours = match.group(6)
         return EmailRecipient(email_address, days, hours)
     else:
         pass
@@ -50,12 +55,6 @@ class NetworkInterface:
     def __init__(self, interface, address_family):
         self.interface = interface
         self.address_family = address_family
-
-    def __str__(self):
-        af = "IPv4"
-        if self.address_family == AddressFamily.AF_INET6:
-            af = "IPv6"
-        return self.interface + " - " + af
 
 def network_interfaces_from_config_list(config_csv):
     return objects_from_comma_separated_list(config_csv, network_interface_from_config_str)
@@ -79,10 +78,11 @@ def network_interface_from_config_str(config_str):
 
 
 # TODO: Call validator functions from set_*() methods
+CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 class Configuration:
     def __init__(self, config_file_path="./config.ini"):
         self.config_file = config_file_path
-        self.config = ConfigObj(self.config_file, configspec="./configspec.ini", list_values=True, raise_errors=True)
+        self.config = ConfigObj(self.config_file, configspec=CONFIGSPEC_PATH, list_values=True, raise_errors=True)
         self.validator = Validator()
         
         if os.path.isfile(self.config_file):
