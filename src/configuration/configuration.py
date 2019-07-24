@@ -5,6 +5,21 @@ import os
 import re
 from socket import AddressFamily
 
+ALERT_THRESHOLD = 'alert_threshold'
+ALERT_THRESHOLD_WINDOW = 'alert_thershold_window'
+ALERTING = 'Alerting'
+EMAIL_SUBJECT = 'email_subject'
+LANDMINE_LOG = 'landmine_log'
+LOGGING = 'Logging'
+MONITORING = 'Monitoring'
+NETWORK_INTERFACES = 'network_interfaces'
+RECIPIENTS = 'recipients'
+SMTP_PASSWORD = 'smtp_password'
+SMTP_PORT = 'smtp_port'
+SMTP_SERVER = 'smtp_server'
+SMTP_USERNAME = 'smtp_username'
+SNORT_LOG = 'snort_log'
+
 class ConfigurationError(Exception):
     pass
 
@@ -101,73 +116,73 @@ class Configuration:
         return self.config.validate(self.validator, copy=True)
 
     def set_snort_log_path(self, log_path):
-        self.config['Monitoring']['snort_log'] = log_path
+        self.config[MONITORING][SNORT_LOG] = log_path
 
     def get_snort_log_path(self):
-        return self.config['Monitoring']['snort_logfile']
+        return self.config[MONITORING][SNORT_LOG]
 
     def set_landmine_log_path(self, log_path):
-        self.config['Logging']['landmine_log'] = log_path
+        self.config[LOGGING][LANDMINE_LOG] = log_path
 
     def get_landmine_log_path(self):
-        return self.config['Logging']['landmine_log']
+        return self.config[LOGGING][LANDMINE_LOG]
 
     def set_smtp_server(self, server):
-        self.config['Alerting']['smtp_server'] = server
+        self.config[ALERTING][SMTP_SERVER] = server
 
     def get_smtp_server(self):
-        return self.config['Alerting']['smtp_server']
+        return self.config[ALERTING][SMTP_SERVER]
 
     def set_smtp_port(self, port):
-        self.config['Alerting']['smtp_port'] = port
+        self.config[ALERTING][SMTP_PORT] = port
 
     def get_smtp_port(self):
-        return self.config['Alerting']['smtp_port']
+        return self.config[ALERTING][SMTP_PORT]
 
     def set_smtp_username(self, username):
-        self.config['Alerting']['smtp_username'] = username
+        self.config[ALERTING][SMTP_USERNAME] = username
 
     def get_smtp_username(self):
-        return self.config['Alerting']['smtp_username']
+        return self.config[ALERTING][SMTP_USERNAME]
 
     def set_smtp_password(self, password):
-        self.config['Alerting']['smtp_password'] = password
+        self.config[ALERTING][SMTP_PASSWORD] = password
 
     def get_smtp_password(self):
-        return self.config['Alerting']['smtp_password']
+        return self.config[ALERTING][SMTP_PASSWORD]
 
     def set_alert_recipients(self, recipients):
-        self.config['Alerting']['Recipients'] = recipients
+        self.config[ALERTING][RECIPIENTS] = recipients
 
     def get_alert_recipients(self):
-        return email_recipients_from_config_list(self.config['Alerting']['recipients'])
+        return email_recipients_from_config_list(self.config[ALERTING][RECIPIENTS])
 
     def set_email_subject(self, subject):
-        self.config['Alerting']['email_subject'] = subject
+        self.config[ALERTING][EMAIL_SUBJECT] = subject
 
     def get_email_subject(self):
-        return self.config['Alerting']['email_subject']
+        return self.config[ALERTING][EMAIL_SUBJECT]
 
     def set_alert_threshold(self, threshold):
-        self.config['Alerting']['alert_threshold'] = threshold
+        self.config[ALERTING][ALERT_THRESHOLD] = threshold
 
     def get_alert_threshold(self):
-        return self.config['Alerting']['alert_threshold']
+        return self.config[ALERTING][ALERT_THRESHOLD]
 
     def set_alert_threshold_window_min(self, threshold_window_min):
-        self.config['Alerting']['alert_threshold_window'] = threshold_window_min
+        self.config[ALERTING][ALERT_THRESHOLD_WINDOW] = threshold_window_min
 
     def get_alert_threshold_window_min(self):
-        return self.config['Alerting']['alert_threshold_window']
+        return self.config[ALERTING][ALERT_THRESHOLD_WINDOW]
 
     def get_alert_threshold_window_sec(self):
-        return self.config['Alerting']['alert_threshold_window'] * 60
+        return self.config[ALERTING][ALERT_THRESHOLD_WINDOW] * 60
 
     def set_network_interfaces(self, interfaces):
-        self.config['Monitoring']['network_interfaces'] = interfaces
+        self.config[MONITORING][NETWORK_INTERFACES] = interfaces
 
     def get_network_interfaces(self):
-        return network_interfaces_from_config_list(self.config['Monitoring']['network_interfaces'])
+        return network_interfaces_from_config_list(self.config[MONITORING][NETWORK_INTERFACES])
  
     def save_config(self):
         try:
