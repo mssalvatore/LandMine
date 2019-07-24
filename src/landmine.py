@@ -113,6 +113,7 @@ def email_threshold_exceeded_alert():
 last_sent_time = 0
 last_sent_count = 0
 def process_alert(alert_text):
+    #TODO: Add logic for suppressing duplicate alerts within the alert_threshold_window
     global last_sent_time
     global last_sent_count
     alert_lines = alert_text.split('\n');
