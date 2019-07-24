@@ -142,6 +142,12 @@ class Configuration:
     def get_alert_recipients(self):
         return email_recipients_from_config_list(self.config['Alerting']['recipients'])
 
+    def set_email_subject(self, subject):
+        self.config['Alerting']['email_subject'] = subject
+
+    def get_email_subject(self):
+        return self.config['Alerting']['email_subject']
+
     def set_network_interfaces(self, interfaces):
         self.config['Monitoring']['network_interfaces'] = interfaces
 

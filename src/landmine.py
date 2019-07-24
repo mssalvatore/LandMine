@@ -47,7 +47,6 @@ def send_email(to, message):
     s.login(config.get_smtp_username(), config.get_smtp_password())
 
     from_address = ""
-    subject = "Snort Alert!"
 
     try:
         s.sendmail(from_address, to, message)
@@ -84,7 +83,7 @@ def email_alert(alert_lines):
     for r in config.get_alert_recipients():
         message = ("From: \n"
                    "To: " + r.email_address + "\n"
-                   "Subject: LandMine Alert!\n\n"
+                   "Subject: " + config.get_email_subject() + "\n\n"
                    " Timestamp: " + timestamp + "\n"
                    " Rule ID:" + rule_id + "\n"
                    " Message: " + alert_msg + "\n"
@@ -102,7 +101,7 @@ def email_threshold_exceeded_alert():
     for r in config.get_alert_recipients():
         message = ("From: \n"
                    "To: " + r.email_address + "\n"
-                   "Subject: LandMine Alert!\n\n"
+                   "Subject: " + config.get_email_subject() + "\n\n"
                    " Email alert threshold exceeded. See /var/log/snort/alert for more info.\n"
                   )
 
