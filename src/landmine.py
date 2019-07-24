@@ -111,21 +111,19 @@ def email_threshold_exceeded_alert():
             send_email(r.email_address, message)
 
 last_sent_time = 0
-last_sent_timeout = 600
 last_sent_count = 0
-last_sent_count_threshold = 3
 def process_alert(alert_text):
     global last_sent_time
     global last_sent_count
     alert_lines = alert_text.split('\n');
-    if (time.time() - last_sent_timeout) > last_sent_time:
+    if (time.time() - config.get_alert_threshold_window_sec()) > last_sent_time:
         last_sent_count = 0
 
-    if last_sent_count < last_sent_count_threshold:
+    if last_sent_count < config.get_alert_threshold():
         email_alert(alert_lines)
         last_sent_count = last_sent_count + 1
         last_sent_time = time.time()
-    elif last_sent_count == last_sent_count_threshold:
+    elif last_sent_count == config.get_alert_threshold():
         email_threshold_exceeded_alert()
         last_sent_count = last_sent_count + 1
     else:

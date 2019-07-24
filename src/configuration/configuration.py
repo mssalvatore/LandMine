@@ -148,6 +148,21 @@ class Configuration:
     def get_email_subject(self):
         return self.config['Alerting']['email_subject']
 
+    def set_alert_threshold(self, threshold):
+        self.config['Alerting']['alert_threshold'] = threshold
+
+    def get_alert_threshold(self):
+        return self.config['Alerting']['alert_threshold']
+
+    def set_alert_threshold_window_min(self, threshold_window_min):
+        self.config['Alerting']['alert_threshold_window'] = threshold_window_min
+
+    def get_alert_threshold_window_min(self):
+        return self.config['Alerting']['alert_threshold_window']
+
+    def get_alert_threshold_window_sec(self):
+        return self.config['Alerting']['alert_threshold_window'] * 60
+
     def set_network_interfaces(self, interfaces):
         self.config['Monitoring']['network_interfaces'] = interfaces
 
