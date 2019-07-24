@@ -1,4 +1,5 @@
 *.snap
 squashfs-root
+config.ini
 
 *.pyc
