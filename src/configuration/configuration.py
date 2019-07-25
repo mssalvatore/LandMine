@@ -1,6 +1,7 @@
 import configobj
 from configobj import ConfigObj
 from email_recipient import EmailRecipient
+from errors import *
 from network_interface import NetworkInterface
 from validate import Validator
 import os
@@ -21,9 +22,6 @@ SMTP_PORT = 'smtp_port'
 SMTP_SERVER = 'smtp_server'
 SMTP_USERNAME = 'smtp_username'
 SNORT_LOG = 'snort_log'
-
-class ConfigurationError(Exception):
-    pass
 
 def objects_from_comma_separated_list(config_csv, callback):
     objects = list()
