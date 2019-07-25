@@ -23,49 +23,6 @@ SMTP_SERVER = 'smtp_server'
 SMTP_USERNAME = 'smtp_username'
 SNORT_LOG = 'snort_log'
 
-def objects_from_comma_separated_list(config_csv, callback):
-    objects = list()
-    for value in config_csv.split(','):
-        objects.append(callback(value))
-
-    return objects
-
-def email_recipients_from_config_list(config_csv):
-    return objects_from_comma_separated_list(config_csv, email_recipient_from_config_str)
-
-def email_recipient_from_config_str(config_str):
-    # TODO: Validate
-    match = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:(([0-6]-[0-6])|\*))?(:((\d{1,2}-\d{1,2})|\*))?", config_str)
-    if match:
-        email_address = match.group(1)
-        days = match.group(3)
-        hours = match.group(6)
-        return EmailRecipient(email_address, days, hours)
-    else:
-        pass
-        # TODO: raise exception
-
-def network_interfaces_from_config_list(config_csv):
-    return objects_from_comma_separated_list(config_csv, network_interface_from_config_str)
-
-def network_interface_from_config_str(config_str):
-    match = re.match(r"(.+):(IPv4|IPv6)", config_str)
-    if match:
-        interface = match.group(1)
-        if match.group(2) == "IPv4":
-            address_family = AddressFamily.AF_INET
-        elif match.group(2) == "IPv6":
-            address_family = AddressFamily.AF_INET6
-        else:
-            pass
-            # TODO: raise exception
-
-        return NetworkInterface(interface, address_family)
-    else:
-        pass
-        # TODO: raise exception
-
-
 # TODO: Call validator functions from set_*() methods
 CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 class Configuration:
@@ -88,6 +45,53 @@ class Configuration:
 
     def validate(self):
         return self.config.validate(self.validator, copy=True)
+
+    @staticmethod
+    def _objects_from_comma_separated_list(config_csv, callback):
+        objects = list()
+        for value in config_csv.split(','):
+            objects.append(callback(value))
+
+        return objects
+
+    @staticmethod
+    def _email_recipients_from_config_list(config_csv):
+        return Configuration._objects_from_comma_separated_list(config_csv, Configuration._email_recipient_from_config_str)
+
+    @staticmethod
+    def _email_recipient_from_config_str(config_str):
+        # TODO: Validate
+        match = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:(([0-6]-[0-6])|\*))?(:((\d{1,2}-\d{1,2})|\*))?", config_str)
+        if match:
+            email_address = match.group(1)
+            days = match.group(3)
+            hours = match.group(6)
+            return EmailRecipient(email_address, days, hours)
+        else:
+            pass
+            # TODO: raise exception
+
+    @staticmethod
+    def _network_interfaces_from_config_list(config_csv):
+        return Configuration._objects_from_comma_separated_list(config_csv, Configuration._network_interface_from_config_str)
+
+    @staticmethod
+    def _network_interface_from_config_str(config_str):
+        match = re.match(r"(.+):(IPv4|IPv6)", config_str)
+        if match:
+            interface = match.group(1)
+            if match.group(2) == "IPv4":
+                address_family = AddressFamily.AF_INET
+            elif match.group(2) == "IPv6":
+                address_family = AddressFamily.AF_INET6
+            else:
+                pass
+                # TODO: raise exception
+
+            return NetworkInterface(interface, address_family)
+        else:
+            pass
+            # TODO: raise exception
 
     def set_snort_log_path(self, log_path):
         self.config[MONITORING][SNORT_LOG] = log_path
@@ -129,7 +133,7 @@ class Configuration:
         self.config[ALERTING][RECIPIENTS] = recipients
 
     def get_alert_recipients(self):
-        return email_recipients_from_config_list(self.config[ALERTING][RECIPIENTS])
+        return Configuration._email_recipients_from_config_list(self.config[ALERTING][RECIPIENTS])
 
     def set_email_subject(self, subject):
         self.config[ALERTING][EMAIL_SUBJECT] = subject
@@ -156,7 +160,7 @@ class Configuration:
         self.config[MONITORING][NETWORK_INTERFACES] = interfaces
 
     def get_network_interfaces(self):
-        return network_interfaces_from_config_list(self.config[MONITORING][NETWORK_INTERFACES])
+        return Configuration._network_interfaces_from_config_list(self.config[MONITORING][NETWORK_INTERFACES])
  
     def save_config(self):
         try:
