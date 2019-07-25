@@ -53,23 +53,24 @@ def send_email(to, message):
     except SMTPException as e:
         logging.error("Caught SMTP exception: %s" % (str(e)))
 
-def within_time_window(current_time, r):
-    if recipient.days_min == '*' and recipient.hours_min == '*':
-        return True
+def within_time_window(atime, recipient):
+    days_min = recipient.days_min
+    days_max = recipient.days_max
+    hours_min = recipient.hours_min
+    hours_max = recipient.hours_max
 
-    if (recipient.days_min == '*' and recipient.hours_min <= current_time.hour
-        and current_time.hour <= recipient.hours_max):
-          return True
-
-    if (recipient.days_min <= current_time.weekday()
-        and current_time.weekday() <= recipient.days_max
-        and recipient.hours_min == '*' ):
+    if days_min == '*':
+        if hours_min == '*':
+            return True
+        if hours_min <= atime.hour and atime.hour <= hours_max):
             return True
 
-    if (recipient.days_min <= current_time.weekday()
-        and current_time.weekday() <= recipient.days_max
-        and recipient.hours_min <= current_time.hour
-        and current_time.hour <= recipient.hours_max):
+    if (hours_min == '*' and
+       (days_min <= atime.weekday() and atime.weekday() <= days_max)):
+            return True
+
+    if ((days_min <= atime.weekday() and atime.weekday() <= days_max) and
+        (hours_min <= atime.hour and atime.hour <= hours_max)):
             return True
 
     return False
