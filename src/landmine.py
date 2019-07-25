@@ -53,7 +53,7 @@ def send_email(to, message):
     except SMTPException as e:
         logging.error("Caught SMTP exception: %s" % (str(e)))
 
-def within_time_window(atime, recipient):
+def is_within_time_window(atime, recipient):
     days_min = recipient.days_min
     days_max = recipient.days_max
     hours_min = recipient.hours_min
@@ -98,7 +98,7 @@ def email_alert(alert_lines):
 
         now = datetime.datetime.now()
 
-        if within_time_window(now, r):
+        if is_within_time_window(now, r):
             send_email(r.email_address, message)
 
 def email_threshold_exceeded_alert():
@@ -112,7 +112,7 @@ def email_threshold_exceeded_alert():
 
         now = datetime.datetime.now()
 
-        if within_time_window(now, r):
+        if is_within_time_window(now, r):
             send_email(r.email_address, message)
 
 last_sent_time = 0
