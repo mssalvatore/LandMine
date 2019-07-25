@@ -53,19 +53,23 @@ def send_email(to, message):
     except SMTPException as e:
         logging.error("Caught SMTP exception: %s" % (str(e)))
 
-def within_time_window(current_time, recipient):
+def within_time_window(current_time, r):
     if recipient.days_min == '*' and recipient.hours_min == '*':
         return True
 
-    if recipient.days_min == '*' and recipient.hours_min <= current_time.hour and current_time.hour <= recipient.hours_max:
+    if (recipient.days_min == '*' and recipient.hours_min <= current_time.hour
+        and current_time.hour <= recipient.hours_max):
           return True
 
-    if (recipient.days_min <= current_time.weekday() and current_time.weekday() <= recipient.days_max
-          and recipient.hours_min == '*' ):
+    if (recipient.days_min <= current_time.weekday()
+        and current_time.weekday() <= recipient.days_max
+        and recipient.hours_min == '*' ):
             return True
 
-    if (recipient.days_min <= current_time.weekday() and current_time.weekday() <= recipient.days_max
-          and recipient.hours_min <= current_time.hour and current_time.hour <= recipient.hours_max):
+    if (recipient.days_min <= current_time.weekday()
+        and current_time.weekday() <= recipient.days_max
+        and recipient.hours_min <= current_time.hour
+        and current_time.hour <= recipient.hours_max):
             return True
 
     return False
@@ -130,7 +134,10 @@ def process_alert(alert_text):
     else:
         logging.warning("Not sending alerts: Sent count and sent time thresholds are exceeded. ")
 
-logging.basicConfig(format='%(asctime)s -- %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', filename=config.get_landmine_log_path(), level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s -- %(message)s',
+                    datefmt='%m/%d/%Y %I:%M:%S %p',
+                    filename=config.get_landmine_log_path(),
+                    level=logging.DEBUG)
 
 f = subprocess.Popen(['tail', '-F', '-n', '0', config.get_snort_log_path()],\
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)

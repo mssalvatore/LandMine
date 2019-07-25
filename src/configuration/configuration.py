@@ -28,7 +28,8 @@ CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 class Configuration:
     def __init__(self, config_file_path="./config.ini"):
         self.config_file = config_file_path
-        self.config = ConfigObj(self.config_file, configspec=CONFIGSPEC_PATH, list_values=True, raise_errors=True)
+        self.config = ConfigObj(self.config_file, configspec=CONFIGSPEC_PATH,
+                                list_values=True, raise_errors=True)
         self.validator = Validator()
         
         if os.path.isfile(self.config_file):
@@ -56,12 +57,16 @@ class Configuration:
 
     @staticmethod
     def _email_recipients_from_config_list(config_csv):
-        return Configuration._objects_from_comma_separated_list(config_csv, Configuration._email_recipient_from_config_str)
+        return Configuration._objects_from_comma_separated_list(config_csv,
+                                Configuration._email_recipient_from_config_str)
 
     @staticmethod
     def _email_recipient_from_config_str(config_str):
         # TODO: Validate
-        match = re.match(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:(([0-6]-[0-6])|\*))?(:((\d{1,2}-\d{1,2})|\*))?", config_str)
+        match = re.match(
+            r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:(([0-6]-[0-6])|\*))?(:((\d{1,2}-\d{1,2})|\*))?",
+            config_str)
+
         if match:
             email_address = match.group(1)
             days = match.group(3)
@@ -73,7 +78,8 @@ class Configuration:
 
     @staticmethod
     def _network_interfaces_from_config_list(config_csv):
-        return Configuration._objects_from_comma_separated_list(config_csv, Configuration._network_interface_from_config_str)
+        return Configuration._objects_from_comma_separated_list(config_csv,
+                               Configuration._network_interface_from_config_str)
 
     @staticmethod
     def _network_interface_from_config_str(config_str):
