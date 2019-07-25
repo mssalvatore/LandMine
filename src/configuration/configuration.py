@@ -1,6 +1,7 @@
 import configobj
 from configobj import ConfigObj
 from email_recipient import EmailRecipient
+from network_interface import NetworkInterface
 from validate import Validator
 import os
 import re
@@ -45,12 +46,6 @@ def email_recipient_from_config_str(config_str):
     else:
         pass
         # TODO: raise exception
-
-
-class NetworkInterface:
-    def __init__(self, interface, address_family):
-        self.interface = interface
-        self.address_family = address_family
 
 def network_interfaces_from_config_list(config_csv):
     return objects_from_comma_separated_list(config_csv, network_interface_from_config_str)
