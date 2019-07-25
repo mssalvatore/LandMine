@@ -75,8 +75,6 @@ def is_within_time_window(atime, recipient):
 
     return False
 
-email_address = ""
-sms_email_address = ""
 def email_alert(alert_lines):
     logging.info("Sending email with alert details")
     timestamp = parse_timestamp(alert_lines)
