@@ -173,4 +173,4 @@ class Configuration:
             self.config.write()
         except Exception as ex:
             msg = "Error writing to config file \"%s\": %s" % (self.config_file, str(ex))
-            raise ConfigurationError(msg)
+            raise ConfigError(msg)
