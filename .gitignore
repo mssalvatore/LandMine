@@ -3,3 +3,4 @@ squashfs-root
 config.ini
 
 *.pyc
+test.py
