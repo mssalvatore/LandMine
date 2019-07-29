@@ -38,7 +38,7 @@ class Configuration:
             self.print_errors(self.config.validate(self.validator, copy=True, preserve_errors=True))
 
     def print_errors(self, results):
-        if results != True:
+        if results is not True:
             print(results)
             for (section_list, key, _) in configobj.flatten_errors(self.config, results):
                 if key is not None:
@@ -113,7 +113,7 @@ class Configuration:
     def _throw_on_invalid_config_option(self, section, key):
         results = self.validate()
 
-        if results == True or results[section][key] == True:
+        if results is True or results[section][key] is True:
             return
 
         msg = results[section][key]
