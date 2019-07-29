@@ -119,75 +119,97 @@ class Configuration:
         msg = results[section][key]
         raise ConfigValidationError(section, key, msg)
 
-    def set_snort_log_path(self, log_path):
-        self.validating_set(log_path, MONITORING, SNORT_LOG)
-
-    def get_snort_log_path(self):
+    @property
+    def snort_log_path(self):
         return self.config[MONITORING][SNORT_LOG]
 
-    def set_landmine_log_path(self, log_path):
-        self.validating_set(log_path, LOGGING, LANDMINE_LOG)
+    @snort_log_path.setter
+    def snort_log_path(self, log_path):
+        self.validating_set(log_path, MONITORING, SNORT_LOG)
 
-    def get_landmine_log_path(self):
+    @property
+    def landmine_log_path(self):
         return self.config[LOGGING][LANDMINE_LOG]
 
-    def set_smtp_server(self, server):
-        self.validating_set(server, ALERTING, SMTP_SERVER)
+    @landmine_log_path.setter
+    def landmine_log_path(self, log_path):
+        self.validating_set(log_path, LOGGING, LANDMINE_LOG)
 
-    def get_smtp_server(self):
+    @property
+    def smtp_server(self):
         return self.config[ALERTING][SMTP_SERVER]
 
-    def set_smtp_port(self, port):
-        self._validating_set(port, ALERTING, SMTP_PORT)
+    @smtp_server.setter
+    def smtp_server(self, server):
+        self.validating_set(server, ALERTING, SMTP_SERVER)
 
-    def get_smtp_port(self):
+    @property
+    def smtp_port(self):
         return self.config[ALERTING][SMTP_PORT]
 
-    def set_smtp_username(self, username):
-        self.validating_set(username, ALERTING, SMTP_USERNAME)
+    @smtp_port.setter
+    def smtp_port(self, port):
+        self._validating_set(port, ALERTING, SMTP_PORT)
 
-    def get_smtp_username(self):
+    @property
+    def smtp_username(self):
         return self.config[ALERTING][SMTP_USERNAME]
 
-    def set_smtp_password(self, password):
-        self.validating_set(password, ALERTING, SMTP_PASSWORD)
+    @smtp_username.setter
+    def smtp_username(self, username):
+        self.validating_set(username, ALERTING, SMTP_USERNAME)
 
-    def get_smtp_password(self):
+    @property
+    def smtp_password(self):
         return self.config[ALERTING][SMTP_PASSWORD]
 
-    def set_alert_recipients(self, recipients):
-        self.validating_set(recipients, ALERTING, RECIPIENTS)
+    @smtp_password.setter
+    def smtp_password(self, password):
+        self.validating_set(password, ALERTING, SMTP_PASSWORD)
 
-    def get_alert_recipients(self):
+    @property
+    def alert_recipients(self):
         return Configuration._email_recipients_from_config_list(self.config[ALERTING][RECIPIENTS])
 
-    def set_email_subject(self, subject):
-        self.validating_set(subject, ALERTING, EMAIL_SUBJECT)
+    @alert_recipients.setter
+    def alert_recipients(self, recipients):
+        self.validating_set(recipients, ALERTING, RECIPIENTS)
 
-    def get_email_subject(self):
+    @property
+    def email_subject(self):
         return self.config[ALERTING][EMAIL_SUBJECT]
 
-    def set_alert_threshold(self, threshold):
-        self.validating_set(threshold, ALERTING, ALERT_THRESHOLD)
+    @email_subject.setter
+    def email_subject(self, subject):
+        self.validating_set(subject, ALERTING, EMAIL_SUBJECT)
 
-    def get_alert_threshold(self):
+    @property
+    def alert_threshold(self):
         return self.config[ALERTING][ALERT_THRESHOLD]
 
-    def set_alert_threshold_window_min(self, threshold_window_min):
-        self.validating_set(threshold_window_min, ALERTING, ALERT_THRESHOLD_WINDOW)
+    @alert_threshold.setter
+    def alert_threshold(self, threshold):
+        self.validating_set(threshold, ALERTING, ALERT_THRESHOLD)
 
-    def get_alert_threshold_window_min(self):
+    @property
+    def alert_threshold_window_min(self):
         return self.config[ALERTING][ALERT_THRESHOLD_WINDOW]
+
+    @alert_threshold_window_min.setter
+    def alert_threshold_window_min(self, threshold_window_min):
+        self.validating_set(threshold_window_min, ALERTING, ALERT_THRESHOLD_WINDOW)
 
     def get_alert_threshold_window_sec(self):
         return self.config[ALERTING][ALERT_THRESHOLD_WINDOW] * 60
 
-    def set_network_interfaces(self, interfaces):
-        self.validating_set(interfaces, MONITORING, NETWORK_INTERFACES)
-
-    def get_network_interfaces(self):
+    @property
+    def network_interfaces(self):
         return Configuration._network_interfaces_from_config_list(self.config[MONITORING][NETWORK_INTERFACES])
  
+    @network_interfaces.setter
+    def network_interfaces(self, interfaces):
+        self.validating_set(interfaces, MONITORING, NETWORK_INTERFACES)
+
     def save_config(self):
         try:
             self.config.write()

@@ -42,9 +42,9 @@ def parse_protocol(alert_lines):
 def send_email(to, message):
     logging.debug("Sending email to %s" % to);
     logging.debug("Message: \n%s" %message);
-    s = smtplib.SMTP(host=config.get_smtp_server(), port=config.get_smtp_port())
+    s = smtplib.SMTP(host=config.smtp_server, port=config.smtp_port)
     s.starttls()
-    s.login(config.get_smtp_username(), config.get_smtp_password())
+    s.login(config.smtp_username, config.smtp_password)
 
     from_address = ""
 
@@ -83,10 +83,10 @@ def email_alert(alert_lines):
     protocol = parse_protocol(alert_lines)
     packet_header_info = parse_packet_ip_port_direction(alert_lines)
 
-    for r in config.get_alert_recipients():
+    for r in config.alert_recipients:
         message = ("From: \n"
                    "To: " + r.email_address + "\n"
-                   "Subject: " + config.get_email_subject() + "\n\n"
+                   "Subject: " + config.email_subject + "\n\n"
                    " Timestamp: " + timestamp + "\n"
                    " Rule ID:" + rule_id + "\n"
                    " Message: " + alert_msg + "\n"
@@ -101,10 +101,10 @@ def email_alert(alert_lines):
 
 def email_threshold_exceeded_alert():
     logging.info("Email threshold exceeded, sending corresponding message.")
-    for r in config.get_alert_recipients():
+    for r in config.alert_recipients:
         message = ("From: \n"
                    "To: " + r.email_address + "\n"
-                   "Subject: " + config.get_email_subject() + "\n\n"
+                   "Subject: " + config.email_subject + "\n\n"
                    " Email alert threshold exceeded. See /var/log/snort/alert for more info.\n"
                   )
 
@@ -123,11 +123,11 @@ def process_alert(alert_text):
     if (time.time() - config.get_alert_threshold_window_sec()) > last_sent_time:
         last_sent_count = 0
 
-    if last_sent_count < config.get_alert_threshold():
+    if last_sent_count < config.alert_threshold:
         email_alert(alert_lines)
         last_sent_count = last_sent_count + 1
         last_sent_time = time.time()
-    elif last_sent_count == config.get_alert_threshold():
+    elif last_sent_count == config.alert_threshold:
         email_threshold_exceeded_alert()
         last_sent_count = last_sent_count + 1
     else:
@@ -135,10 +135,10 @@ def process_alert(alert_text):
 
 logging.basicConfig(format='%(asctime)s -- %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p',
-                    filename=config.get_landmine_log_path(),
+                    filename=config.landmine_log_path,
                     level=logging.DEBUG)
 
-f = subprocess.Popen(['tail', '-F', '-n', '0', config.get_snort_log_path()],\
+f = subprocess.Popen(['tail', '-F', '-n', '0', config.snort_log_path],\
         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 # TODO: On start, read network interface settings and build snort rule set, then restart snort

@@ -137,7 +137,7 @@ def show_logging_dialog(d):
 
     #TODO: Validate path
     if code == d.OK:
-        config.set_landmine_log_path(user_input)
+        config.landmine_log_path = user_input
 
 def save_config(d):
     config.save_config()
