@@ -125,7 +125,7 @@ class Configuration:
 
     @snort_log_path.setter
     def snort_log_path(self, log_path):
-        self.validating_set(log_path, MONITORING, SNORT_LOG)
+        self._validating_set(log_path, MONITORING, SNORT_LOG)
 
     @property
     def landmine_log_path(self):
@@ -133,7 +133,7 @@ class Configuration:
 
     @landmine_log_path.setter
     def landmine_log_path(self, log_path):
-        self.validating_set(log_path, LOGGING, LANDMINE_LOG)
+        self._validating_set(log_path, LOGGING, LANDMINE_LOG)
 
     @property
     def smtp_server(self):
@@ -141,7 +141,7 @@ class Configuration:
 
     @smtp_server.setter
     def smtp_server(self, server):
-        self.validating_set(server, ALERTING, SMTP_SERVER)
+        self._validating_set(server, ALERTING, SMTP_SERVER)
 
     @property
     def smtp_port(self):
@@ -157,7 +157,7 @@ class Configuration:
 
     @smtp_username.setter
     def smtp_username(self, username):
-        self.validating_set(username, ALERTING, SMTP_USERNAME)
+        self._validating_set(username, ALERTING, SMTP_USERNAME)
 
     @property
     def smtp_password(self):
@@ -165,7 +165,7 @@ class Configuration:
 
     @smtp_password.setter
     def smtp_password(self, password):
-        self.validating_set(password, ALERTING, SMTP_PASSWORD)
+        self._validating_set(password, ALERTING, SMTP_PASSWORD)
 
     @property
     def alert_recipients(self):
@@ -173,7 +173,7 @@ class Configuration:
 
     @alert_recipients.setter
     def alert_recipients(self, recipients):
-        self.validating_set(recipients, ALERTING, RECIPIENTS)
+        self._validating_set(recipients, ALERTING, RECIPIENTS)
 
     @property
     def email_subject(self):
@@ -181,7 +181,7 @@ class Configuration:
 
     @email_subject.setter
     def email_subject(self, subject):
-        self.validating_set(subject, ALERTING, EMAIL_SUBJECT)
+        self._validating_set(subject, ALERTING, EMAIL_SUBJECT)
 
     @property
     def alert_threshold(self):
@@ -189,7 +189,7 @@ class Configuration:
 
     @alert_threshold.setter
     def alert_threshold(self, threshold):
-        self.validating_set(threshold, ALERTING, ALERT_THRESHOLD)
+        self._validating_set(threshold, ALERTING, ALERT_THRESHOLD)
 
     @property
     def alert_threshold_window_min(self):
@@ -197,7 +197,7 @@ class Configuration:
 
     @alert_threshold_window_min.setter
     def alert_threshold_window_min(self, threshold_window_min):
-        self.validating_set(threshold_window_min, ALERTING, ALERT_THRESHOLD_WINDOW)
+        self._validating_set(threshold_window_min, ALERTING, ALERT_THRESHOLD_WINDOW)
 
     def get_alert_threshold_window_sec(self):
         return self.config[ALERTING][ALERT_THRESHOLD_WINDOW] * 60
@@ -208,7 +208,7 @@ class Configuration:
  
     @network_interfaces.setter
     def network_interfaces(self, interfaces):
-        self.validating_set(interfaces, MONITORING, NETWORK_INTERFACES)
+        self._validating_set(interfaces, MONITORING, NETWORK_INTERFACES)
 
     def save_config(self):
         try:
