@@ -5,6 +5,9 @@ from email_recipient import EmailRecipient
 from errors import *
 from network_interface import NetworkInterface
 from validate import Validator
+from validate import VdtValueError
+from validate import VdtTypeError
+from validate import VdtMissingValue
 import os
 import re
 from socket import AddressFamily
@@ -24,6 +27,13 @@ SMTP_SERVER = 'smtp_server'
 SMTP_USERNAME = 'smtp_username'
 SNORT_LOG = 'snort_log'
 
+EMAIL_ADDRESS_REGEX = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
+DAYS_REGEX = "([0-6]-[0-6])|\*"
+HOURS_REGEX = "(\d{1,2}-\d{1,2})|\*"
+EMAIL_RECIPIENT_REGEX = r"^(%s)(:(%s))(:(%s))" % (EMAIL_ADDRESS_REGEX,
+                                                   DAYS_REGEX,
+                                                   HOURS_REGEX)
+
 CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 
 class Configuration:
@@ -33,9 +43,13 @@ class Configuration:
                                 list_values=True, raise_errors=True,
                                 write_empty_values=True)
         self.validator = Validator()
-        
+        self._register_custom_validators()
+
         if os.path.isfile(self.config_file):
             self.print_errors(self.config.validate(self.validator, copy=True, preserve_errors=True))
+
+    def _register_custom_validators(self):
+        self.validator.functions['alert_recipient_list'] = Configuration._alert_recipient_list
 
     def print_errors(self, results):
         if results is not True:
@@ -64,19 +78,46 @@ class Configuration:
 
     @staticmethod
     def _email_recipient_from_config_str(config_str):
-        # TODO: Validate
-        match = re.match(
-            r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)(:(([0-6]-[0-6])|\*))?(:((\d{1,2}-\d{1,2})|\*))?",
-            config_str)
+        email_address, days, hours = Configuration._parse_and_validate_email_recipient(config_str)
+        return EmailRecipient(email_address, days, hours)
 
-        if match:
-            email_address = match.group(1)
-            days = match.group(3)
-            hours = match.group(6)
-            return EmailRecipient(email_address, days, hours)
-        else:
-            pass
-            # TODO: raise exception
+    @staticmethod
+    def _alert_recipient_list(recipient_list):
+        # TODO: Consider subclassing Vdt Errors in order to provide more
+        #       meaningful feedback
+        if not isinstance(recipient_list, list):
+            raise VdtTypeError(recipient_list)
+
+        if len(recipient_list) == 0:
+            raise VdtMissingValue("Recipient list must have at least one recipient")
+
+        for recipient in recipient_list:
+            Configuration._parse_and_validate_email_recipient(recipient)
+
+
+    @staticmethod
+    def _parse_and_validate_email_recipient(email_recipient):
+        match = re.match(EMAIL_RECIPIENT_REGEX, email_recipient)
+        if not match:
+            # TODO: Consider subclassing VdtValueError in order to provide more
+            #       meaningful feedback
+            raise VdtValueError(email_recipient)
+
+        email_address = match.group(1)
+        days = match.group(3)
+        hours = match.group(6)
+
+        if days is not "*":
+            days_list = days.split("-")
+            if len(days_list) != 2 or days_list[0] > days_list[1]:
+                raise VdtValueError(email_recipient)
+
+        if hours is not "*":
+            hours_list = hours.split("-")
+            if len(hours_list) != 2 or hours_list[0] > hours_list[1]:
+                raise VdtValueError(email_recipient)
+
+        return (email_address, days, hours)
 
     @staticmethod
     def _network_interfaces_from_config_list(config_csv):
@@ -205,7 +246,7 @@ class Configuration:
     @property
     def network_interfaces(self):
         return Configuration._network_interfaces_from_config_list(self.config[MONITORING][NETWORK_INTERFACES])
- 
+
     @network_interfaces.setter
     def network_interfaces(self, interfaces):
         self._validating_set(interfaces, MONITORING, NETWORK_INTERFACES)
