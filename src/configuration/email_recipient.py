@@ -28,17 +28,25 @@ class EmailRecipient:
             self.hours_min = int(hours.split('-')[0].strip())
             self.hours_max = int(hours.split('-')[1].strip())
 
+    def __str__(self):
+        days = ""
+        if self.days_min == '*':
+            days = '*'
+        else:
+            days = "-".join((str(self.days_min), str(self.days_max)))
+
+        hours = ""
+        if self.hours_min == '*':
+            hours = '*'
+        else:
+            hours = "-".join((str(self.hours_min), str(self.hours_max)))
+
+        return ":".join((self.email_address, days, hours))
+
     @staticmethod
     def from_config_str(config_str):
         email_address, days, hours = EmailRecipient._parse(config_str)
         return EmailRecipient(email_address, days, hours)
-
-    @staticmethod
-    def parse_and_validate(config_str):
-        email_address, days, hours = EmailRecipient._parse(config_str)
-        EmailRecipient._validate(email_address, days, hours)
-
-        return email_address, days, hours
 
     @staticmethod
     def _parse(config_str):

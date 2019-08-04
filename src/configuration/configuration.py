@@ -57,19 +57,6 @@ class Configuration:
         return self.config.validate(self.validator, copy=True, preserve_errors=True)
 
     @staticmethod
-    def _objects_from_comma_separated_list(config_csv, callback):
-        objects = list()
-        for value in config_csv.split(','):
-            objects.append(callback(value))
-
-        return objects
-
-    @staticmethod
-    def _email_recipients_from_config_list(config_csv):
-        return Configuration._objects_from_comma_separated_list(config_csv,
-                                EmailRecipient.from_config_str)
-
-    @staticmethod
     def _alert_recipient_list(recipient_list):
         # TODO: Consider subclassing Vdt Errors in order to provide more
         #       meaningful feedback
@@ -79,13 +66,11 @@ class Configuration:
         if len(recipient_list) == 0:
             raise VdtMissingValue("Recipient list must have at least one recipient")
 
+        email_recipients = list()
         for recipient in recipient_list:
-            EmailRecipient.parse_and_validate(recipient)
+            email_recipients.append(EmailRecipient.from_config_str(recipient))
 
-    @staticmethod
-    def _network_interfaces_from_config_list(config_csv):
-        return Configuration._objects_from_comma_separated_list(config_csv,
-                               NetworkInterface.from_config_str)
+        return email_recipients
 
     # TODO: This code is mostly duplicated from _alert_recipient_list. Fix that.
     @staticmethod
@@ -98,8 +83,11 @@ class Configuration:
         if len(network_interface_list) == 0:
             raise VdtMissingValue("Network interface list must have at least one interface")
 
+        network_interfaces = list()
         for interface in network_interface_list:
-            NetworkInterface.parse_and_validate(interface)
+            network_interfaces.append(NetworkInterface.from_config_str(interface))
+
+        return network_interfaces
 
     def _validating_set(self, value, section, key):
         try:
@@ -169,7 +157,7 @@ class Configuration:
 
     @property
     def alert_recipients(self):
-        return Configuration._email_recipients_from_config_list(self.config[ALERTING][RECIPIENTS])
+        return self.config[ALERTING][RECIPIENTS]
 
     @alert_recipients.setter
     def alert_recipients(self, recipients):
@@ -204,7 +192,7 @@ class Configuration:
 
     @property
     def network_interfaces(self):
-        return Configuration._network_interfaces_from_config_list(self.config[MONITORING][NETWORK_INTERFACES])
+        return self.config[MONITORING][NETWORK_INTERFACES]
 
     @network_interfaces.setter
     def network_interfaces(self, interfaces):

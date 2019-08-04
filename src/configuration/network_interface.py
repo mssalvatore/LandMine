@@ -10,17 +10,13 @@ class NetworkInterface:
         self.interface = interface
         self.address_family = address_family
 
+    def __str__(self):
+        return ":".join((self.interface, self.address_family))
+
     @staticmethod
     def from_config_str(config_str):
         interface, address_family = NetworkInterface._parse(config_str)
         return NetworkInterface(interface, address_family)
-
-    @staticmethod
-    def parse_and_validate(config_str):
-        interface, address_family = NetworkInterface._parse(config_str)
-        NetworkInterface._validate(interface, address_family)
-
-        return interface, address_family
 
     @staticmethod
     def _parse(config_str):
