@@ -5,7 +5,6 @@ from email_recipient import EmailRecipient
 from errors import *
 from network_interface import NetworkInterface
 from validate import Validator
-from validate import VdtValueError
 from validate import VdtTypeError
 from validate import VdtMissingValue
 import os
@@ -26,8 +25,6 @@ SMTP_PORT = 'smtp_port'
 SMTP_SERVER = 'smtp_server'
 SMTP_USERNAME = 'smtp_username'
 SNORT_LOG = 'snort_log'
-
-NETWORK_INTERFACE_REGEX = r"(.+):(IPv4|IPv6)"
 
 CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 
@@ -88,12 +85,7 @@ class Configuration:
     @staticmethod
     def _network_interfaces_from_config_list(config_csv):
         return Configuration._objects_from_comma_separated_list(config_csv,
-                               Configuration._network_interface_from_config_str)
-
-    @staticmethod
-    def _network_interface_from_config_str(config_str):
-        interface, address_family = Configuration._parse_and_validate_network_interface(config_str)
-        return NetworkInterface(interface, address_family)
+                               NetworkInterface.from_config_str)
 
     # TODO: This code is mostly duplicated from _alert_recipient_list. Fix that.
     @staticmethod
@@ -107,23 +99,7 @@ class Configuration:
             raise VdtMissingValue("Network interface list must have at least one interface")
 
         for interface in network_interface_list:
-            Configuration._parse_and_validate_network_interface(interface)
-
-    @staticmethod
-    def _parse_and_validate_network_interface(network_interface):
-        match = re.match(NETWORK_INTERFACE_REGEX, network_interface)
-        if not match:
-            raise VdtValueError(network_interface)
-
-        interface = match.group(1)
-        if match.group(2) == "IPv4":
-            address_family = AddressFamily.AF_INET
-        elif match.group(2) == "IPv6":
-            address_family = AddressFamily.AF_INET6
-        else:
-            raise VdtValueError(network_interface)
-
-        return interface, address_family
+            NetworkInterface.parse_and_validate(interface)
 
     def _validating_set(self, value, section, key):
         try:
