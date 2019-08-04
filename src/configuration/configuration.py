@@ -34,6 +34,8 @@ EMAIL_RECIPIENT_REGEX = r"^(%s)(:(%s))(:(%s))" % (EMAIL_ADDRESS_REGEX,
                                                    DAYS_REGEX,
                                                    HOURS_REGEX)
 
+NETWORK_INTERFACE_REGEX = r"(.+):(IPv4|IPv6)"
+
 CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 
 class Configuration:
@@ -50,6 +52,7 @@ class Configuration:
 
     def _register_custom_validators(self):
         self.validator.functions['alert_recipient_list'] = Configuration._alert_recipient_list
+        self.validator.functions['network_interface_list'] = Configuration._network_interface_list
 
     def print_errors(self, results):
         if results is not True:
@@ -94,7 +97,6 @@ class Configuration:
         for recipient in recipient_list:
             Configuration._parse_and_validate_email_recipient(recipient)
 
-
     @staticmethod
     def _parse_and_validate_email_recipient(email_recipient):
         match = re.match(EMAIL_RECIPIENT_REGEX, email_recipient)
@@ -126,21 +128,38 @@ class Configuration:
 
     @staticmethod
     def _network_interface_from_config_str(config_str):
-        match = re.match(r"(.+):(IPv4|IPv6)", config_str)
-        if match:
-            interface = match.group(1)
-            if match.group(2) == "IPv4":
-                address_family = AddressFamily.AF_INET
-            elif match.group(2) == "IPv6":
-                address_family = AddressFamily.AF_INET6
-            else:
-                pass
-                # TODO: raise exception
+        interface, address_family = Configuration._parse_and_validate_network_interface(config_str)
+        return NetworkInterface(interface, address_family)
 
-            return NetworkInterface(interface, address_family)
+    # TODO: This code is mostly duplicated from _alert_recipient_list. Fix that.
+    @staticmethod
+    def _network_interface_list(network_interface_list):
+        # TODO: Consider subclassing Vdt Errors in order to provide more
+        #       meaningful feedback
+        if not isinstance(network_interface_list, list):
+            raise VdtTypeError(network_interface_list)
+
+        if len(network_interface_list) == 0:
+            raise VdtMissingValue("Network interface list must have at least one interface")
+
+        for interface in network_interface_list:
+            Configuration._parse_and_validate_network_interface(interface)
+
+    @staticmethod
+    def _parse_and_validate_network_interface(network_interface):
+        match = re.match(NETWORK_INTERFACE_REGEX, network_interface)
+        if not match:
+            raise VdtValueError(network_interface)
+
+        interface = match.group(1)
+        if match.group(2) == "IPv4":
+            address_family = AddressFamily.AF_INET
+        elif match.group(2) == "IPv6":
+            address_family = AddressFamily.AF_INET6
         else:
-            pass
-            # TODO: raise exception
+            raise VdtValueError(network_interface)
+
+        return interface, address_family
 
     def _validating_set(self, value, section, key):
         try:
