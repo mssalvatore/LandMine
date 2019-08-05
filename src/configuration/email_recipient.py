@@ -28,20 +28,30 @@ class EmailRecipient:
             self.hours_min = int(hours.split('-')[0].strip())
             self.hours_max = int(hours.split('-')[1].strip())
 
-    def __str__(self):
-        days = ""
-        if self.days_min == '*':
-            days = '*'
-        else:
-            days = "-".join((str(self.days_min), str(self.days_max)))
+    def validate(self):
+        EmailRecipient._validate(self.email_address, self._days_str(), self._hours_str())
 
-        hours = ""
-        if self.hours_min == '*':
-            hours = '*'
-        else:
-            hours = "-".join((str(self.hours_min), str(self.hours_max)))
+    def __str__(self):
+        days = self._days_str()
+        hours = self._hours_str()
 
         return ":".join((self.email_address, days, hours))
+
+    def _days_str(self):
+        return EmailRecipient._range_str(str(self.days_min), str(self.days_max))
+
+    def _hours_str(self):
+        return EmailRecipient._range_str(str(self.hours_min), str(self.hours_max))
+
+    @staticmethod
+    def _range_str(min_val, max_val):
+        val_str = ""
+        if min_val == '*':
+            val_str = '*'
+        else:
+            val_str = "-".join((min_val, max_val))
+
+        return val_str
 
     @staticmethod
     def from_config_str(config_str):
@@ -68,12 +78,12 @@ class EmailRecipient:
             raise VdtValueError(email_address)
 
         if days is not "*":
-            days_list = days.split("-")
+            days_list = list(map(int, days.split("-")))
             if len(days_list) != 2 or days_list[0] > days_list[1]:
                 raise VdtValueError(":".join((email_address, days, hours)))
 
         if hours is not "*":
-            hours_list = hours.split("-")
+            hours_list = list(map(int, hours.split("-")))
             if len(hours_list) != 2 or hours_list[0] > hours_list[1]:
                 raise VdtValueError(":".join((email_address, days, hours)))
 

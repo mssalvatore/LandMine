@@ -68,7 +68,13 @@ class Configuration:
 
         email_recipients = list()
         for recipient in recipient_list:
-            email_recipients.append(EmailRecipient.from_config_str(recipient))
+            if type(recipient) is str:
+                email_recipients.append(EmailRecipient.from_config_str(recipient))
+            elif type(recipient) is EmailRecipient:
+                recipient.validate()
+                email_recipients.append(recipient)
+            else:
+                raise VdtTypeError(recipient)
 
         return email_recipients
 
@@ -85,7 +91,13 @@ class Configuration:
 
         network_interfaces = list()
         for interface in network_interface_list:
-            network_interfaces.append(NetworkInterface.from_config_str(interface))
+            if type(interface) is str:
+                network_interfaces.append(NetworkInterface.from_config_str(interface))
+            elif type(interface) is NetworkInterface:
+                interface.validate()
+                network_interfaces.append(interface)
+            else:
+                raise VdtTypeError(interface)
 
         return network_interfaces
 

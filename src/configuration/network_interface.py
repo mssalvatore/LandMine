@@ -10,6 +10,9 @@ class NetworkInterface:
         self.interface = interface
         self.address_family = address_family
 
+    def validate(self):
+        NetworkInterface._validate(self.interface, self.address_family)
+
     def __str__(self):
         return ":".join((self.interface, self.address_family))
 
@@ -31,7 +34,8 @@ class NetworkInterface:
 
     @staticmethod
     def _validate(interface, address_family):
-        # TODO, SEC: validate interface so arbitrary snort rules can't be
+        # TODO:
+        # SEC: validate interface so arbitrary snort rules can't be
         #            injected into the snort rules config
         if (address_family != "IPv4") and (address_family != "IPv6"): 
             raise VdtValueError(network_interface)
