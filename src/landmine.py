@@ -59,21 +59,26 @@ def is_within_time_window(atime, recipient):
     hours_min = recipient.hours_min
     hours_max = recipient.hours_max
 
+    return is_within_days_window(atime, days_min, days_max) \
+            and is_within_hours_window(atime, hours_min, hours_max)
+
+def is_within_days_window(atime, days_min, days_max):
     if days_min == '*':
-        if hours_min == '*':
-            return True
-        if hours_min <= atime.hour and atime.hour <= hours_max):
-            return True
+        return True
 
-    if (hours_min == '*' and
-       (days_min <= atime.weekday() and atime.weekday() <= days_max)):
-            return True
+    if days_min > days_max:
+        return atime.weekday() >= days_min or atime.weekday() <= days_max
 
-    if ((days_min <= atime.weekday() and atime.weekday() <= days_max) and
-        (hours_min <= atime.hour and atime.hour <= hours_max)):
-            return True
+    return days_min <= atime.weekday() and atime.weekday() <= days_max
 
-    return False
+def is_within_hours_window(atime, hours_min, hours_max):
+    if hours_min == '*':
+        return True
+
+    if hours_min > hours_max:
+        return atime.hour >= hours_min or atime.hour <= hours_max
+
+    return hours_min <= atime.hour and atime.hour <= hours_max
 
 def email_alert(alert_lines):
     logging.info("Sending email with alert details")

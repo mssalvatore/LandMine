@@ -79,11 +79,11 @@ class EmailRecipient:
 
         if days is not "*":
             days_list = list(map(int, days.split("-")))
-            if len(days_list) != 2 or days_list[0] > days_list[1]:
+            if len(days_list) != 2:
                 raise VdtValueError(":".join((email_address, days, hours)))
 
         if hours is not "*":
             hours_list = list(map(int, hours.split("-")))
-            if len(hours_list) != 2 or hours_list[0] > hours_list[1]:
+            if len(hours_list) != 2:
                 raise VdtValueError(":".join((email_address, days, hours)))
 
