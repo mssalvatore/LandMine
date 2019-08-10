@@ -1,15 +1,15 @@
 import configobj
 from configobj import ConfigObj
 import copy
-from email_recipient import EmailRecipient
-from errors import *
-from network_interface import NetworkInterface
-from validate import Validator
-from validate import VdtTypeError
-from validate import VdtMissingValue
+from .email_recipient import EmailRecipient
+from .errors import *
+from .network_interface import NetworkInterface
 import os
 import re
 from socket import AddressFamily
+from validate import Validator
+from validate import VdtTypeError
+from validate import VdtMissingValue
 
 ALERT_THRESHOLD = 'alert_threshold'
 ALERT_THRESHOLD_WINDOW = 'alert_thershold_window'
