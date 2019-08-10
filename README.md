@@ -36,4 +36,6 @@ TBD
 Snort
 
 Python 3
-
+    ConfigObj
+    dialog
+    psutil
