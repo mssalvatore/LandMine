@@ -1,6 +1,7 @@
 *.snap
 squashfs-root
 config.ini
+save.config.ini
 
 *.pyc
 test.py
