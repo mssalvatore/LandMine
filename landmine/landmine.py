@@ -50,32 +50,32 @@ def send_email(to, message):
     except SMTPException as e:
         logging.error("Caught SMTP exception: %s" % (str(e)))
 
-def is_within_time_window(atime, recipient):
+def is_within_time_window(dtime, recipient):
     days_min = recipient.days_min
     days_max = recipient.days_max
     hours_min = recipient.hours_min
     hours_max = recipient.hours_max
 
-    return is_within_days_window(atime, days_min, days_max) \
-            and is_within_hours_window(atime, hours_min, hours_max)
+    return is_within_days_window(dtime, days_min, days_max) \
+            and is_within_hours_window(dtime, hours_min, hours_max)
 
-def is_within_days_window(atime, days_min, days_max):
+def is_within_days_window(dtime, days_min, days_max):
     if days_min == '*':
         return True
 
     if days_min > days_max:
-        return atime.weekday() >= days_min or atime.weekday() <= days_max
+        return dtime.weekday() >= days_min or dtime.weekday() <= days_max
 
-    return days_min <= atime.weekday() and atime.weekday() <= days_max
+    return days_min <= dtime.weekday() and dtime.weekday() <= days_max
 
-def is_within_hours_window(atime, hours_min, hours_max):
+def is_within_hours_window(dtime, hours_min, hours_max):
     if hours_min == '*':
         return True
 
     if hours_min > hours_max:
-        return atime.hour >= hours_min or atime.hour <= hours_max
+        return dtime.hour >= hours_min or dtime.hour <= hours_max
 
-    return hours_min <= atime.hour and atime.hour <= hours_max
+    return hours_min <= dtime.hour and dtime.hour <= hours_max
 
 def email_alert(alert_lines):
     logging.info("Sending email with alert details")
