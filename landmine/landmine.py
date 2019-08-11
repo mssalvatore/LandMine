@@ -5,7 +5,6 @@ import re
 import smtplib
 import subprocess
 import time
-config = Configuration("./config.ini")
 
 rule_id_regex = re.compile(r"\[\d+:(\d+):\d+\]")
 def parse_rule_id(alert_lines):
@@ -36,7 +35,7 @@ def parse_packet_ip_port_direction(alert_lines):
 def parse_protocol(alert_lines):
     return alert_lines[3].split(' ')[0];
 
-def send_email(to, message):
+def send_email(config, to, message):
     logging.debug("Sending email to %s" % to);
     logging.debug("Message: \n%s" %message);
     s = smtplib.SMTP(host=config.smtp_server, port=config.smtp_port)
@@ -77,7 +76,7 @@ def is_within_hours_window(dtime, hours_min, hours_max):
 
     return hours_min <= dtime.hour and dtime.hour < hours_max
 
-def email_alert(alert_lines):
+def email_alert(config, alert_lines):
     logging.info("Sending email with alert details")
     timestamp = parse_timestamp(alert_lines)
     rule_id = parse_rule_id(alert_lines)
@@ -99,9 +98,9 @@ def email_alert(alert_lines):
         now = datetime.datetime.now()
 
         if is_within_time_window(now, r):
-            send_email(r.email_address, message)
+            send_email(config, r.email_address, message)
 
-def email_threshold_exceeded_alert():
+def email_threshold_exceeded_alert(config):
     logging.info("Email threshold exceeded, sending corresponding message.")
     for r in config.alert_recipients:
         message = ("From: \n"
@@ -113,11 +112,11 @@ def email_threshold_exceeded_alert():
         now = datetime.datetime.now()
 
         if is_within_time_window(now, r):
-            send_email(r.email_address, message)
+            send_email(config, r.email_address, message)
 
 last_sent_time = 0
 last_sent_count = 0
-def process_alert(alert_text):
+def process_alert(config, alert_text):
     #TODO: Add logic for suppressing duplicate alerts within the alert_threshold_window
     global last_sent_time
     global last_sent_count
@@ -126,16 +125,18 @@ def process_alert(alert_text):
         last_sent_count = 0
 
     if last_sent_count < config.alert_threshold:
-        email_alert(alert_lines)
+        email_alert(config, alert_lines)
         last_sent_count = last_sent_count + 1
         last_sent_time = time.time()
     elif last_sent_count == config.alert_threshold:
-        email_threshold_exceeded_alert()
+        email_threshold_exceeded_alert(config)
         last_sent_count = last_sent_count + 1
     else:
         logging.warning("Not sending alerts: Sent count and sent time thresholds are exceeded. ")
 
 def run():
+    config = Configuration("./config.ini")
+
     logging.basicConfig(format='%(asctime)s -- %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S %p',
                         filename=config.landmine_log_path,
@@ -153,5 +154,5 @@ def run():
             line = f.stdout.readline().decode("utf-8")
 
         logging.debug("Found snort alert:\n%s\n" % (alert_text))
-        landmine.process_alert(alert_text)
+        landmine.process_alert(config, alert_text)
 
