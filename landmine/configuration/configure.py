@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-from configuration import Configuration
+from .configuration import Configuration
 from dialog import Dialog
-import dialog_constants as dc
+from . import dialog_constants as dc
 import psutil
 import re
 from socket import AddressFamily
@@ -35,7 +35,7 @@ def loop_dialog(d, dialog_callback, extra_callback=None, cancel_callback=None):
 def show_exception_msg(d, ex):
     d.msgbox("An error occurred while trying to save the configuration:\n\n%s" % str(ex), title="Error", height=10, width=72)
         
-def main():
+def run():
     d = Dialog(autowidgetsize=True)
     loop_dialog(d, main_menu_dialog, save_config)
     # TODO: cancel_callback(): Are you sure you want to overwite the config file?
@@ -152,4 +152,3 @@ dialog_callbacks = {dc.NETWORK_MENU: show_network_dialog,
                     dc.DELETE_ALERT_RECIPIENTS_MENU: delete_recipients_dialog,
                     }
 
-main()

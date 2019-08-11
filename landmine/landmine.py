@@ -1,13 +1,10 @@
-#!/usr/bin/env python3
-
-from configuration.configuration import Configuration
+from .configuration.configuration import Configuration
 import datetime
 import logging
 import re
 import smtplib
 import subprocess
 import time
-
 config = Configuration("./config.ini")
 
 rule_id_regex = re.compile(r"\[\d+:(\d+):\d+\]")
@@ -138,21 +135,23 @@ def process_alert(alert_text):
     else:
         logging.warning("Not sending alerts: Sent count and sent time thresholds are exceeded. ")
 
-logging.basicConfig(format='%(asctime)s -- %(message)s',
-                    datefmt='%m/%d/%Y %I:%M:%S %p',
-                    filename=config.landmine_log_path,
-                    level=logging.DEBUG)
+def run():
+    logging.basicConfig(format='%(asctime)s -- %(message)s',
+                        datefmt='%m/%d/%Y %I:%M:%S %p',
+                        filename=config.landmine_log_path,
+                        level=logging.DEBUG)
 
-f = subprocess.Popen(['tail', '-F', '-n', '0', config.snort_log_path],\
-        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    f = subprocess.Popen(['tail', '-F', '-n', '0', config.snort_log_path],\
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-# TODO: On start, read network interface settings and build snort rule set, then restart snort
-while True:
-    alert_text = ""
-    line = f.stdout.readline().decode("utf-8")
-    while line != "\n":
-        alert_text = alert_text + line;
+    # TODO: On start, read network interface settings and build snort rule set, then restart snort
+    while True:
+        alert_text = ""
         line = f.stdout.readline().decode("utf-8")
+        while line != "\n":
+            alert_text = alert_text + line;
+            line = f.stdout.readline().decode("utf-8")
 
-    logging.debug("Found snort alert:\n%s\n" % (alert_text))
-    process_alert(alert_text)
+        logging.debug("Found snort alert:\n%s\n" % (alert_text))
+        landmine.process_alert(alert_text)
+
