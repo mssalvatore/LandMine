@@ -75,7 +75,7 @@ def is_within_hours_window(dtime, hours_min, hours_max):
     if hours_min > hours_max:
         return dtime.hour >= hours_min or dtime.hour <= hours_max
 
-    return hours_min <= dtime.hour and dtime.hour <= hours_max
+    return hours_min <= dtime.hour and dtime.hour < hours_max
 
 def email_alert(alert_lines):
     logging.info("Sending email with alert details")
