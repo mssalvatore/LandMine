@@ -144,7 +144,9 @@ def run():
     f = subprocess.Popen(['tail', '-F', '-n', '0', config.snort_log_path],\
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    # TODO: On start, read network interface settings and build snort rule set, then restart snort
+    # TODO: On start, read network interface settings and build snort rule set,
+    #       then restart snort. Use an ipvar to simplify ruleset generation:
+    #       https://www.snort.org/faq/readme-variables
     while True:
         alert_text = ""
         line = f.stdout.readline().decode("utf-8")
