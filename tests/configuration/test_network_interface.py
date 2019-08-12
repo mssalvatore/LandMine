@@ -55,11 +55,9 @@ def test_invalid_interface_restricted_characters():
     with pytest.raises(validate.VdtValueError):
         NetworkInterface("eth0!", "IPv6")
     with pytest.raises(validate.VdtValueError):
+        NetworkInterface("eth0/", "IPv6")
+    with pytest.raises(validate.VdtValueError):
         NetworkInterface("eth0,", "IPv6")
-    with pytest.raises(validate.VdtValueError):
-        NetworkInterface("eth0/", "IPv6")
-    with pytest.raises(validate.VdtValueError):
-        NetworkInterface("eth0/", "IPv6")
 
 def test_from_config_str_IPv4():
     ni = NetworkInterface.from_config_str("enp2s1:IPv4")
