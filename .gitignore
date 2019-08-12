@@ -5,3 +5,6 @@ save.config.ini
 
 *.pyc
 test.py
+
+htmlcov
+.coverage
