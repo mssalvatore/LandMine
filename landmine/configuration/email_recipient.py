@@ -1,9 +1,9 @@
 import re
 from validate import VdtValueError
 
-EMAIL_ADDRESS_REGEX = "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
-DAYS_REGEX = "([0-6]-[0-6])|\*"
-HOURS_REGEX = "(\d{1,2}-\d{1,2})|\*"
+EMAIL_ADDRESS_REGEX = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
+DAYS_REGEX = r"([0-6]-[0-6])|\*"
+HOURS_REGEX = r"(\d{1,2}-\d{1,2})|\*"
 EMAIL_RECIPIENT_REGEX = r"^(%s)(:(%s))(:(%s))" % (EMAIL_ADDRESS_REGEX,
                                                    DAYS_REGEX,
                                                    HOURS_REGEX)
@@ -73,17 +73,37 @@ class EmailRecipient:
         return email_address, days, hours
 
     @staticmethod
+    def _split_range_str(range_str):
+        try:
+            range_list = list(map(int, range_str.split("-")))
+        except ValueError as ve:
+            raise VdtValueError(range_str)
+
+        return range_list
+
+    @staticmethod
+    def _range_is_valid(range_min, range_max, value_str):
+        if value_str is "*":
+            return True
+
+        values = EmailRecipient._split_range_str(value_str)
+
+        if len(values) != 2:
+            return False
+
+        for value in values:
+            if range_min > value or value > range_max:
+                return False
+
+        return True
+
+    @staticmethod
     def _validate(email_address, days, hours):
         if not re.match(EMAIL_ADDRESS_REGEX, email_address):
             raise VdtValueError(email_address)
 
-        if days is not "*":
-            days_list = list(map(int, days.split("-")))
-            if len(days_list) != 2:
-                raise VdtValueError(":".join((email_address, days, hours)))
+        if not EmailRecipient._range_is_valid(0, 6, days):
+            raise VdtValueError(":".join((email_address, days, hours)))
 
-        if hours is not "*":
-            hours_list = list(map(int, hours.split("-")))
-            if len(hours_list) != 2:
-                raise VdtValueError(":".join((email_address, days, hours)))
-
+        if not EmailRecipient._range_is_valid(0, 23, hours):
+            raise VdtValueError(":".join((email_address, days, hours)))
