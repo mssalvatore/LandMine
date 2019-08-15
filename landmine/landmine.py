@@ -134,6 +134,7 @@ def process_alert(config, alert_text):
     global last_sent_time
     global last_sent_count
     alert_lines = alert_text.split('\n');
+    #TODO: check len(alert_lines). Send e-mail if snort alert is malformed
     if (time.time() - config.get_alert_threshold_window_sec()) > last_sent_time:
         last_sent_count = 0
 
