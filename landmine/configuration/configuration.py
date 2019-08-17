@@ -12,7 +12,7 @@ from validate import VdtTypeError
 from validate import VdtMissingValue
 
 ALERT_THRESHOLD = 'alert_threshold'
-ALERT_THRESHOLD_WINDOW = 'alert_thershold_window'
+ALERT_THRESHOLD_WINDOW = 'alert_threshold_window'
 ALERTING = 'Alerting'
 EMAIL_SUBJECT = 'email_subject'
 LANDMINE_LOG = 'landmine_log'
@@ -24,7 +24,7 @@ SMTP_PASSWORD = 'smtp_password'
 SMTP_PORT = 'smtp_port'
 SMTP_SERVER = 'smtp_server'
 SMTP_USERNAME = 'smtp_username'
-SNORT_LOG = 'snort_log'
+SNORT_LOG = 'snort_logfile'
 
 CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 

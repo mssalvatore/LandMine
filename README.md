@@ -36,6 +36,8 @@ TBD
 Snort
 
 Python 3
-    ConfigObj
-    dialog
-    psutil
+* ConfigObj
+* dialog
+* psutil
+* pytest
+* pytest-cov

@@ -12,7 +12,7 @@ def parse_rule_id(alert_lines):
     if matches:
         return matches.group(1)
 
-    return "";
+    raise Exception("Error parsing rule ID from snort alert")
 
 msg_regex = re.compile(r"\[\*\*\] \[.*\] (.*) \[\*\*\]")
 def parse_alert_msg(alert_lines):
@@ -20,20 +20,33 @@ def parse_alert_msg(alert_lines):
     if matches:
         return matches.group(1)
 
-    return "";
+    raise Exception("Error parsing message from snort alert")
 
 def parse_timestamp(alert_lines):
-    return alert_lines[2].split(' ')[0]
+    timestamp = alert_lines[2].split(' ')[0]
+
+    if not timestamp:
+        raise Exception("Error parsing procol from snort alert")
+
+    return timestamp
 
 def parse_packet_ip_port_direction(alert_lines):
     split_line = alert_lines[2].split(' ');
+    if len(split_line) != 4:
+        raise Exception("Error parsing IP/Port from snort alert")
+
     src = split_line[1]
     direction = split_line[2]
     destination = split_line[3]
     return src + " " + direction + " " + destination;
 
 def parse_protocol(alert_lines):
-    return alert_lines[3].split(' ')[0];
+    protocol = alert_lines[3].split(' ')[0];
+
+    if not protocol:
+        raise Exception("Error parsing procol from snort alert")
+
+    return protocol
 
 def send_email(config, to, message):
     logging.debug("Sending email to %s" % to);
@@ -49,32 +62,32 @@ def send_email(config, to, message):
     except SMTPException as e:
         logging.error("Caught SMTP exception: %s" % (str(e)))
 
-def is_within_time_window(atime, recipient):
+def is_within_time_window(dtime, recipient):
     days_min = recipient.days_min
     days_max = recipient.days_max
     hours_min = recipient.hours_min
     hours_max = recipient.hours_max
 
-    return is_within_days_window(atime, days_min, days_max) \
-            and is_within_hours_window(atime, hours_min, hours_max)
+    return is_within_days_window(dtime, days_min, days_max) \
+            and is_within_hours_window(dtime, hours_min, hours_max)
 
-def is_within_days_window(atime, days_min, days_max):
+def is_within_days_window(dtime, days_min, days_max):
     if days_min == '*':
         return True
 
     if days_min > days_max:
-        return atime.weekday() >= days_min or atime.weekday() <= days_max
+        return dtime.weekday() >= days_min or dtime.weekday() <= days_max
 
-    return days_min <= atime.weekday() and atime.weekday() <= days_max
+    return days_min <= dtime.weekday() and dtime.weekday() <= days_max
 
-def is_within_hours_window(atime, hours_min, hours_max):
+def is_within_hours_window(dtime, hours_min, hours_max):
     if hours_min == '*':
         return True
 
     if hours_min > hours_max:
-        return atime.hour >= hours_min or atime.hour <= hours_max
+        return dtime.hour >= hours_min or dtime.hour <= hours_max
 
-    return hours_min <= atime.hour and atime.hour <= hours_max
+    return hours_min <= dtime.hour and dtime.hour < hours_max
 
 def email_alert(config, alert_lines):
     logging.info("Sending email with alert details")
@@ -121,6 +134,7 @@ def process_alert(config, alert_text):
     global last_sent_time
     global last_sent_count
     alert_lines = alert_text.split('\n');
+    #TODO: check len(alert_lines). Send e-mail if snort alert is malformed
     if (time.time() - config.get_alert_threshold_window_sec()) > last_sent_time:
         last_sent_count = 0
 
