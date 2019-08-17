@@ -51,7 +51,7 @@ def test_is_within_time_window_hour_outside_cyclical(friday_datetime):
     recipient = EmailRecipient("test@test.test", "*", "19-17")
     assert not landmine.is_within_time_window(friday_datetime, recipient)
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def snort_alert():
     return ['[**] [1:20000002:0] Unexpected packet [**]',
             '[Priority: 0] ',
@@ -86,6 +86,11 @@ def test_parse_alert_msg(snort_alert):
 def test_parse_timestamp(snort_alert):
     expected = "08/11-20:24:41.343538"
     assert landmine.parse_timestamp(snort_alert) == expected
+
+def test_parse_timestamp_empty(snort_alert):
+    snort_alert[2] = ''
+    with pytest.raises(Exception):
+        landmine.parse_timestamp(snort_alert)
 
 def test_parse_ip_port_direction(snort_alert):
     expected = "192.168.1.10:40784 -> 192.168.1.20:22"
