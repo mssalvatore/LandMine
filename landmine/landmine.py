@@ -6,48 +6,6 @@ import smtplib
 import subprocess
 import time
 
-rule_id_regex = re.compile(r"\[\d+:(\d+):\d+\]")
-def parse_rule_id(alert_lines):
-    matches = rule_id_regex.search(alert_lines[0]);
-    if matches:
-        return matches.group(1)
-
-    raise Exception("Error parsing rule ID from snort alert")
-
-msg_regex = re.compile(r"\[\*\*\] \[.*\] (.*) \[\*\*\]")
-def parse_alert_msg(alert_lines):
-    matches = msg_regex.search(alert_lines[0]);
-    if matches:
-        return matches.group(1)
-
-    raise Exception("Error parsing message from snort alert")
-
-def parse_timestamp(alert_lines):
-    timestamp = alert_lines[2].split(' ')[0]
-
-    if not timestamp:
-        raise Exception("Error parsing procol from snort alert")
-
-    return timestamp
-
-def parse_packet_ip_port_direction(alert_lines):
-    split_line = alert_lines[2].split(' ');
-    if len(split_line) != 4:
-        raise Exception("Error parsing IP/Port from snort alert")
-
-    src = split_line[1]
-    direction = split_line[2]
-    destination = split_line[3]
-    return src + " " + direction + " " + destination;
-
-def parse_protocol(alert_lines):
-    protocol = alert_lines[3].split(' ')[0];
-
-    if not protocol:
-        raise Exception("Error parsing procol from snort alert")
-
-    return protocol
-
 def send_email(config, to, message):
     logging.debug("Sending email to %s" % to);
     logging.debug("Message: \n%s" %message);
@@ -89,23 +47,18 @@ def is_within_hours_window(dtime, hours_min, hours_max):
 
     return hours_min <= dtime.hour and dtime.hour < hours_max
 
-def email_alert(config, alert_lines):
+def email_alert(config, snort_alert):
     logging.info("Sending email with alert details")
-    timestamp = parse_timestamp(alert_lines)
-    rule_id = parse_rule_id(alert_lines)
-    alert_msg = parse_alert_msg(alert_lines)
-    protocol = parse_protocol(alert_lines)
-    packet_header_info = parse_packet_ip_port_direction(alert_lines)
 
     for r in config.alert_recipients:
         message = ("From: \n"
                    "To: " + r.email_address + "\n"
                    "Subject: " + config.email_subject + "\n\n"
-                   " Timestamp: " + timestamp + "\n"
-                   " Rule ID:" + rule_id + "\n"
-                   " Message: " + alert_msg + "\n"
-                   " Protocol: " + protocol + "\n"
-                   " Packet Data:" + packet_header_info + "\n"
+                   " Timestamp: " + snort_alert.timestamp + "\n"
+                   " Rule ID:" + snort_alert.rule_id + "\n"
+                   " Message: " + snort_alert.alert_msg + "\n"
+                   " Protocol: " + snort_alert.protocol + "\n"
+                   " Packet Data:" + snort_alert.packet_header_info + "\n"
                   )
 
         now = datetime.datetime.now()
@@ -129,17 +82,15 @@ def email_threshold_exceeded_alert(config):
 
 last_sent_time = 0
 last_sent_count = 0
-def process_alert(config, alert_text):
+def process_alert(config, snort_alert):
     #TODO: Add logic for suppressing duplicate alerts within the alert_threshold_window
     global last_sent_time
     global last_sent_count
-    alert_lines = alert_text.split('\n');
-    #TODO: check len(alert_lines). Send e-mail if snort alert is malformed
     if (time.time() - config.get_alert_threshold_window_sec()) > last_sent_time:
         last_sent_count = 0
 
     if last_sent_count < config.alert_threshold:
-        email_alert(config, alert_lines)
+        email_alert(config, snort_alert)
         last_sent_count = last_sent_count + 1
         last_sent_time = time.time()
     elif last_sent_count == config.alert_threshold:
@@ -163,12 +114,18 @@ def run():
     #       then restart snort. Use an ipvar to simplify ruleset generation:
     #       https://www.snort.org/faq/readme-variables
     while True:
-        alert_text = ""
+        alert_lines = list()
         line = f.stdout.readline().decode("utf-8")
         while line != "\n":
-            alert_text = alert_text + line;
+            alert_lines.append(line)
             line = f.stdout.readline().decode("utf-8")
 
-        logging.debug("Found snort alert:\n%s\n" % (alert_text))
-        landmine.process_alert(config, alert_text)
+        logging.debug("Found snort alert:\n%s\n" % ("\n".join(alert_lines)))
+        try:
+            snort_alert = SnortAlert(alert_lines)
+        except Exception as ex:
+            #TODO: Send e-mail if snort alert is malformed
+            pass
+        else:
+            process_alert(config, snort_alert)
 
