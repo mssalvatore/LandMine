@@ -1,10 +1,19 @@
+# Snapcraft files
 *.snap
 squashfs-root
 config.ini
 save.config.ini
 
-*.pyc
-test.py
-
+# Test coverage files
 htmlcov
 .coverage
+
+# Compiled python modules
+*.pyc
+
+# Setuptools distribution folder
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools
+/*.egg-info
+.eggs
