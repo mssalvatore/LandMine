@@ -54,12 +54,7 @@ def email_alert(config, snort_alert):
         message = ("From: \n"
                    "To: " + r.email_address + "\n"
                    "Subject: " + config.email_subject + "\n\n"
-                   " Timestamp: " + snort_alert.timestamp + "\n"
-                   " Rule ID:" + snort_alert.rule_id + "\n"
-                   " Message: " + snort_alert.alert_msg + "\n"
-                   " Protocol: " + snort_alert.protocol + "\n"
-                   " Packet Data:" + snort_alert.packet_header_info + "\n"
-                  )
+                   + str(snort_alert))
 
         now = datetime.datetime.now()
 

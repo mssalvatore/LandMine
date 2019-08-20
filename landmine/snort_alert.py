@@ -12,6 +12,15 @@ class SnortAlert:
         self._protocol = SnortAlert.parse_protocol(alert_lines)
         self._packet_header_info = SnortAlert.parse_packet_ip_port_direction(alert_lines)
 
+    def __str__(self):
+        alert_summary = "Timestamp: " + self.timestamp + "\n"
+        alert_summary += "Rule ID: " + self.rule_id + "\n"
+        alert_summary += "Message: " + self.alert_msg + "\n"
+        alert_summary += "Protocol: " + self.protocol + "\n"
+        alert_summary += "Packet Data: " + self.packet_header_info + "\n"
+
+        return alert_summary
+
     @staticmethod
     def parse_rule_id(alert_lines):
         matches = SnortAlert._rule_id_regex.search(alert_lines[0]);
