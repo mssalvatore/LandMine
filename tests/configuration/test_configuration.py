@@ -24,7 +24,7 @@ def test_construct_from_file(config):
     assert config.email_subject == 'LandMine Alert!'
     assert config.alert_threshold == 10
     assert config.alert_threshold_window_min == 5
-    #assert config.suppress_duplicate_alerts == True
+    assert config.suppress_duplicate_alerts == True
     assert config.landmine_log_path == '/var/snap/current/common/landmine.log'
 
 def test_set_snort_log_path(config):
@@ -117,6 +117,14 @@ def test_set_alert_threshold_window_low(config):
 
 def test_alert_threshold_window_sec(config):
     assert config.get_alert_threshold_window_sec() == 300
+
+def test_set_suppress_duplicate_alerts(config):
+    config.suppress_duplicate_alerts = False
+    assert config.suppress_duplicate_alerts is False
+
+def test_set_suppress_duplicate_alerts_invalid_type(config):
+    with pytest.raises(ConfigValidationError):
+        config.suppress_duplicate_alerts = "hello"
 
 # TODO: TEST NETWORK INTERFACES
 

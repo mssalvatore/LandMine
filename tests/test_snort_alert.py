@@ -25,6 +25,19 @@ def malformed_snort_alert_lines_2():
             '[Priority: 0] ',
             '08/11-4:41343538192.168.1.10:40784->192.168.1.20:22']
 
+def test_string(snort_alert_lines):
+    expected = ("Timestamp: 08/11-20:24:41.343538\n"
+                "Rule ID: 20000002\n"
+                "Message: Unexpected packet\n"
+                "Protocol: TCP\n"
+                "Packet Data: 192.168.1.10:40784 -> 192.168.1.20:22\n")
+
+    snort_alert = SnortAlert(snort_alert_lines)
+    print(str(snort_alert))
+    print()
+    print(expected)
+    assert str(snort_alert) == expected
+
 def test_parse_rule_id(snort_alert_lines):
     expected = "20000002"
     snort_alert = SnortAlert(snort_alert_lines)

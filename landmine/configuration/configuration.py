@@ -25,6 +25,7 @@ SMTP_PORT = 'smtp_port'
 SMTP_SERVER = 'smtp_server'
 SMTP_USERNAME = 'smtp_username'
 SNORT_LOG = 'snort_logfile'
+SUPPRESS_DUPLICATES = 'suppress_duplicate_alerts'
 
 CONFIGSPEC_PATH = os.path.join(os.path.dirname(__file__), "./configspec.ini")
 
@@ -201,6 +202,14 @@ class Configuration:
 
     def get_alert_threshold_window_sec(self):
         return self.config[ALERTING][ALERT_THRESHOLD_WINDOW] * 60
+
+    @property
+    def suppress_duplicate_alerts(self):
+        return self.config[ALERTING][SUPPRESS_DUPLICATES]
+
+    @suppress_duplicate_alerts.setter
+    def suppress_duplicate_alerts(self, suppress_duplicate_alerts):
+        self._validating_set(suppress_duplicate_alerts, ALERTING, SUPPRESS_DUPLICATES)
 
     @property
     def network_interfaces(self):
