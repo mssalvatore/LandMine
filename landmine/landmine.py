@@ -1,5 +1,5 @@
 from .configuration.configuration import Configuration
-import datetime
+from datetime import datetime
 import logging
 import re
 import smtplib
@@ -56,7 +56,7 @@ def email_alert(config, snort_alert):
                    "Subject: " + config.email_subject + "\n\n"
                    + str(snort_alert))
 
-        now = datetime.datetime.now()
+        now = datetime.now()
 
         if is_within_time_window(now, r):
             send_email(config, r.email_address, message)
@@ -70,7 +70,7 @@ def email_threshold_exceeded_alert(config):
                    " Email alert threshold exceeded. See /var/log/snort/alert for more info.\n"
                   )
 
-        now = datetime.datetime.now()
+        now = datetime.now()
 
         if is_within_time_window(now, r):
             send_email(config, r.email_address, message)
