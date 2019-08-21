@@ -1,3 +1,4 @@
+from .alert_deduplicator import AlertDeduplicator
 from .configuration.configuration import Configuration
 from datetime import datetime
 import logging
@@ -75,27 +76,18 @@ def email_threshold_exceeded_alert(config):
         if is_within_time_window(now, r):
             send_email(config, r.email_address, message)
 
-last_sent_time = 0
-last_sent_count = 0
-def process_alert(config, snort_alert):
-    #TODO: Add logic for suppressing duplicate alerts within the alert_threshold_window
-    global last_sent_time
-    global last_sent_count
-    if (time.time() - config.get_alert_threshold_window_sec()) > last_sent_time:
-        last_sent_count = 0
-
-    if last_sent_count < config.alert_threshold:
+def process_alert(config, alert_dedup, snort_alert):
+    if alert_dedup.should_send_alert(snort_alert):
         email_alert(config, snort_alert)
-        last_sent_count = last_sent_count + 1
-        last_sent_time = time.time()
-    elif last_sent_count == config.alert_threshold:
-        email_threshold_exceeded_alert(config)
-        last_sent_count = last_sent_count + 1
     else:
         logging.warning("Not sending alerts: Sent count and sent time thresholds are exceeded. ")
 
 def run():
     config = Configuration("./config.ini")
+
+    alert_dedup = AlertDeduplicator(config.alert_threshold,
+                                    config.get_alert_threshold_window_sec,
+                                    config.suppress_duplicate_alerts)
 
     logging.basicConfig(format='%(asctime)s -- %(message)s',
                         datefmt='%m/%d/%Y %I:%M:%S %p',
@@ -122,5 +114,5 @@ def run():
             #TODO: Send e-mail if snort alert is malformed
             pass
         else:
-            process_alert(config, snort_alert)
+            process_alert(config, alert_dedup, snort_alert)
 
