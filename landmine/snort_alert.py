@@ -21,17 +21,17 @@ class SnortAlert:
 
         return alert_summary
 
-    @staticmethod
-    def parse_rule_id(alert_lines):
-        matches = SnortAlert._rule_id_regex.search(alert_lines[0]);
+    @classmethod
+    def parse_rule_id(cls, alert_lines):
+        matches = cls._rule_id_regex.search(alert_lines[0]);
         if matches:
             return matches.group(1)
 
         raise Exception("Error parsing rule ID from snort alert")
 
-    @staticmethod
-    def parse_alert_msg(alert_lines):
-        matches = SnortAlert._msg_regex.search(alert_lines[0]);
+    @classmethod
+    def parse_alert_msg(cls, alert_lines):
+        matches = cls._msg_regex.search(alert_lines[0]);
         if matches:
             return matches.group(1)
 

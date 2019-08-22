@@ -53,9 +53,9 @@ class EmailRecipient:
 
         return val_str
 
-    @staticmethod
-    def from_config_str(config_str):
-        email_address, days, hours = EmailRecipient._parse(config_str)
+    @classmethod
+    def from_config_str(cls, config_str):
+        email_address, days, hours = cls._parse(config_str)
         return EmailRecipient(email_address, days, hours)
 
     @staticmethod
@@ -81,12 +81,12 @@ class EmailRecipient:
 
         return range_list
 
-    @staticmethod
-    def _range_is_valid(range_min, range_max, value_str):
+    @classmethod
+    def _range_is_valid(cls, range_min, range_max, value_str):
         if value_str is "*":
             return True
 
-        values = EmailRecipient._split_range_str(value_str)
+        values = cls._split_range_str(value_str)
 
         if len(values) != 2:
             return False
@@ -97,13 +97,13 @@ class EmailRecipient:
 
         return True
 
-    @staticmethod
-    def _validate(email_address, days, hours):
+    @classmethod
+    def _validate(cls, email_address, days, hours):
         if not re.match(EMAIL_ADDRESS_REGEX, email_address):
             raise VdtValueError(email_address)
 
-        if not EmailRecipient._range_is_valid(0, 6, days):
+        if not cls._range_is_valid(0, 6, days):
             raise VdtValueError(":".join((email_address, days, hours)))
 
-        if not EmailRecipient._range_is_valid(0, 23, hours):
+        if not cls._range_is_valid(0, 23, hours):
             raise VdtValueError(":".join((email_address, days, hours)))

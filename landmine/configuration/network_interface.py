@@ -1,9 +1,9 @@
 import re
 from validate import VdtValueError
 
-NETWORK_INTERFACE_REGEX = r"(.+):(IPv4|IPv6)"
-
 class NetworkInterface:
+    NETWORK_INTERFACE_REGEX = r"(.+):(IPv4|IPv6)"
+
     def __init__(self, interface, address_family):
         NetworkInterface._validate(interface, address_family)
 
@@ -16,14 +16,14 @@ class NetworkInterface:
     def __str__(self):
         return ":".join((self.interface, self.address_family))
 
-    @staticmethod
-    def from_config_str(config_str):
-        interface, address_family = NetworkInterface._parse(config_str)
+    @classmethod
+    def from_config_str(cls, config_str):
+        interface, address_family = cls._parse(config_str)
         return NetworkInterface(interface, address_family)
 
-    @staticmethod
-    def _parse(config_str):
-        match = re.match(NETWORK_INTERFACE_REGEX, config_str)
+    @classmethod
+    def _parse(cls, config_str):
+        match = re.match(cls.NETWORK_INTERFACE_REGEX, config_str)
         if not match:
             raise VdtValueError(config_str)
 
