@@ -2,6 +2,34 @@ from landmine.configuration.email_recipient import EmailRecipient
 import pytest
 import validate
 
+def test_email_recpient():
+    er = EmailRecipient("mike@test.test", "02-6", "8-20")
+    er.validate()
+
+    assert er.email_address == "mike@test.test"
+    assert er.days_min == 2
+    assert er.days_max == 6
+    assert er.hours_min == 8
+    assert er.hours_max == 20
+
+def test_email_recpient_1():
+    er = EmailRecipient("mike@test.test", "*", "8-20")
+    er.validate()
+
+    assert er.email_address == "mike@test.test"
+    assert er.days_min == '*'
+    assert er.hours_min == 8
+    assert er.hours_max == 20
+
+def test_email_recpient_2():
+    er = EmailRecipient("mike@test.test", "2-6", "*")
+    er.validate()
+
+    assert er.email_address == "mike@test.test"
+    assert er.days_min == 2
+    assert er.days_max == 6
+    assert er.hours_min == '*'
+
 def test_bogus_email():
     with pytest.raises(validate.VdtValueError):
         EmailRecipient("bogus", "0-4", "08-20")
