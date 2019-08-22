@@ -77,3 +77,20 @@ def test_str():
     ni = NetworkInterface("eth0", "IPv4")
     assert str(ni) == "eth0:IPv4"
 
+def test_eq():
+    ni_1 = NetworkInterface("eth0", "IPv4")
+    ni_2 = NetworkInterface("eth0", "IPv4")
+
+    assert ni_1 == ni_2
+
+def test_not_eq_1():
+    ni_1 = NetworkInterface("eth0", "IPv4")
+    ni_2 = NetworkInterface("eth0", "IPv6")
+
+    assert not (ni_1 == ni_2)
+
+def test_not_eq_2():
+    ni_1 = NetworkInterface("eth0", "IPv4")
+    ni_2 = NetworkInterface("eth1", "IPv4")
+
+    assert not (ni_1 == ni_2)

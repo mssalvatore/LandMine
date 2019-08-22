@@ -16,6 +16,12 @@ class NetworkInterface:
     def __str__(self):
         return ":".join((self.interface, self.address_family))
 
+    def __eq__(self, other):
+        if self.__class__ != other.__class__:
+            return False
+
+        return self.__dict__ == other.__dict__
+
     @classmethod
     def from_config_str(cls, config_str):
         interface, address_family = cls._parse(config_str)
