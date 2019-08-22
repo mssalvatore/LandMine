@@ -37,6 +37,12 @@ class EmailRecipient:
 
         return ":".join((self.email_address, days, hours))
 
+    def __eq__(self, other):
+        if self.__class__ != other.__class__:
+            return False
+
+        return self.__dict__ == other.__dict__
+
     def _days_str(self):
         return EmailRecipient._range_str(str(self.days_min), str(self.days_max))
 

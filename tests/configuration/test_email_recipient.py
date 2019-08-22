@@ -87,3 +87,51 @@ def test_str():
 def test_str_2():
     er = EmailRecipient("test@test.net", "0-4", "*")
     assert str(er) == "test@test.net:0-4:*"
+
+def test_eq():
+    er_1 = EmailRecipient("mike@test.test", "02-6", "8-20")
+    er_2 = EmailRecipient("mike@test.test", "02-6", "8-20")
+
+    assert er_1 == er_2
+
+def test_not_eq_1():
+    er_1 = EmailRecipient("mike@test.test", "3-6", "8-20")
+    er_2 = EmailRecipient("mike@test.test", "2-6", "8-20")
+
+    assert not (er_1 == er_2)
+
+def test_not_eq_2():
+    er_1 = EmailRecipient("mike@test.test", "2-6", "8-20")
+    er_2 = EmailRecipient("mike@test.test", "2-5", "8-20")
+
+    assert not (er_1 == er_2)
+
+def test_not_eq_3():
+    er_1 = EmailRecipient("mike@test.test", "2-6", "8-20")
+    er_2 = EmailRecipient("different@test.test", "2-6", "8-20")
+
+    assert not (er_1 == er_2)
+
+def test_not_eq_4():
+    er_1 = EmailRecipient("mike@test.test", "2-6", "9-20")
+    er_2 = EmailRecipient("mike@test.test", "2-6", "8-20")
+
+    assert not (er_1 == er_2)
+
+def test_not_eq_5():
+    er_1 = EmailRecipient("mike@test.test", "2-6", "8-20")
+    er_2 = EmailRecipient("mike@test.test", "2-6", "8-19")
+
+    assert not (er_1 == er_2)
+
+def test_not_eq_6():
+    er_1 = EmailRecipient("mike@test.test", "2-6", "8-20")
+    er_2 = EmailRecipient("mike@test.test", "*", "8-19")
+
+    assert not (er_1 == er_2)
+
+def test_not_eq_7():
+    er_1 = EmailRecipient("mike@test.test", "2-6", "*")
+    er_2 = EmailRecipient("mike@test.test", "2-6", "8-19")
+
+    assert not (er_1 == er_2)
