@@ -6,10 +6,15 @@ import validate
 def test_IPv4_address_family():
     ni = NetworkInterface("eth0", "IPv4")
     ni.validate()
+    assert ni.interface == "eth0"
+    assert ni.address_family == "IPv4"
 
 def test_IPv6_address_family():
     ni = NetworkInterface("eth0", "IPv6")
     ni.validate()
+
+    assert ni.interface == "eth0"
+    assert ni.address_family == "IPv6"
 
 def test_invalid_address_family():
     invalid_addr_family = "IPv5"
