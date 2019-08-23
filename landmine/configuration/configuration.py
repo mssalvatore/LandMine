@@ -42,8 +42,8 @@ class Configuration:
             self.print_errors(self.config.validate(self.validator, copy=True, preserve_errors=True))
 
     def _register_custom_validators(self):
-        self.validator.functions['alert_recipient_list'] = Configuration._alert_recipient_list
-        self.validator.functions['network_interface_list'] = Configuration._network_interface_list
+        self.validator.functions['alert_recipient_list'] = Configuration._validate_alert_recipient_list
+        self.validator.functions['network_interface_list'] = Configuration._validate_network_interface_list
 
     def print_errors(self, results):
         if results is not True:
@@ -58,49 +58,34 @@ class Configuration:
         return self.config.validate(self.validator, copy=True, preserve_errors=True)
 
     @staticmethod
-    def _alert_recipient_list(recipient_list):
+    def _validate_list_items(config_list_items, cls):
         # TODO: Consider subclassing Vdt Errors in order to provide more
         #       meaningful feedback
-        if not isinstance(recipient_list, list):
-            raise VdtTypeError(recipient_list)
+        if not isinstance(config_list_items, list):
+            raise VdtTypeError(config_list_items)
 
-        if len(recipient_list) == 0:
-            raise VdtMissingValue("Recipient list must have at least one recipient")
+        if len(config_list_items) == 0:
+            raise VdtMissingValue("Lists must contain at least one item")
 
-        email_recipients = list()
-        for recipient in recipient_list:
-            if type(recipient) is str:
-                email_recipients.append(EmailRecipient.from_config_str(recipient))
-            elif type(recipient) is EmailRecipient:
-                recipient.validate()
-                email_recipients.append(recipient)
+        validated_results = list()
+        for item in config_list_items:
+            if type(item) is str:
+                validated_results.append(cls.from_config_str(item))
+            elif type(item) is cls:
+                item.validate()
+                validated_results.append(item)
             else:
-                raise VdtTypeError(recipient)
+                raise VdtTypeError(item)
 
-        return email_recipients
+        return validated_results
 
-    # TODO: This code is mostly duplicated from _alert_recipient_list. Fix that.
     @staticmethod
-    def _network_interface_list(network_interface_list):
-        # TODO: Consider subclassing Vdt Errors in order to provide more
-        #       meaningful feedback
-        if not isinstance(network_interface_list, list):
-            raise VdtTypeError(network_interface_list)
+    def _validate_alert_recipient_list(recipient_list):
+        return Configuration._validate_list_items(recipient_list, EmailRecipient)
 
-        if len(network_interface_list) == 0:
-            raise VdtMissingValue("Network interface list must have at least one interface")
-
-        network_interfaces = list()
-        for interface in network_interface_list:
-            if type(interface) is str:
-                network_interfaces.append(NetworkInterface.from_config_str(interface))
-            elif type(interface) is NetworkInterface:
-                interface.validate()
-                network_interfaces.append(interface)
-            else:
-                raise VdtTypeError(interface)
-
-        return network_interfaces
+    @staticmethod
+    def _validate_network_interface_list(network_interface_list):
+        return Configuration._validate_list_items(network_interface_list, NetworkInterface)
 
     def _validating_set(self, value, section, key):
         try:
