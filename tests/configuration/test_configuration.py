@@ -1,4 +1,5 @@
 from landmine.configuration.configuration import Configuration
+from landmine.configuration.email_recipient import EmailRecipient
 from landmine.configuration.errors import ConfigValidationError
 from landmine.configuration.errors import ConfigError
 import hashlib
@@ -9,14 +10,23 @@ import validate
 
 TEST_CONFIG_PATH = "tests/assets/test_config.ini"
 @pytest.fixture
-def config(tmp_path):
+def config():
     cwd = os.getcwd()
     return Configuration(os.path.join(cwd, TEST_CONFIG_PATH))
 
-def test_construct_from_file(config):
+@pytest.fixture
+def recipients():
+    recipients = list()
+    recipients.append(EmailRecipient("test@test.net", "0-6", "*"));
+    recipients.append(EmailRecipient("test2@test.com", "*", "*"));
+    recipients.append(EmailRecipient("test3@example.edu", "1-5", "9-17"));
+
+    return recipients
+
+def test_construct_from_file(config, recipients):
     assert config.snort_log_path == '/var/log/snort/alert'
+    assert config.alert_recipients == recipients
     # Check expected network interfaces
-    # Check expected email recipients
     assert config.smtp_server == 'smtp.example.com'
     assert config.smtp_port == 587
     assert config.smtp_username == 'testuser'
@@ -81,7 +91,25 @@ def test_set_smtp_password_invalid_type(config):
     with pytest.raises(ConfigValidationError):
         config.smtp_password = False
 
-# TODO: TEST ALERT RECIPIENTS
+def test_set_alert_recipients(recipients):
+    config = Configuration()
+    config.alert_recipients = recipients
+
+def test_set_alert_recipients_empty_list():
+    config = Configuration()
+    with pytest.raises(ConfigValidationError):
+        config.alert_recipients = list()
+
+def test_set_alert_recipients_not_list():
+    config = Configuration()
+    with pytest.raises(ConfigValidationError):
+        config.alert_recipients = "hello"
+
+def test_set_alert_recipients_wrong_type_in_list():
+    config = Configuration()
+    a_list = [1,2]
+    with pytest.raises(ConfigValidationError):
+        config.alert_recipients = a_list
 
 def test_set_email_subject(config):
     config.email_subject = "AN EMAIL SUBJECT"
