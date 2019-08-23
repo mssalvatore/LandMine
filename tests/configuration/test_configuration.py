@@ -1,5 +1,6 @@
 from landmine.configuration.configuration import Configuration
 from landmine.configuration.email_recipient import EmailRecipient
+from landmine.configuration.network_interface import NetworkInterface
 from landmine.configuration.errors import ConfigValidationError
 from landmine.configuration.errors import ConfigError
 import hashlib
@@ -23,10 +24,19 @@ def recipients():
 
     return recipients
 
-def test_construct_from_file(config, recipients):
+@pytest.fixture
+def network_interfaces():
+    network_interfaces = list()
+    network_interfaces.append(NetworkInterface("eth0", "IPv4"));
+    network_interfaces.append(NetworkInterface("ethA", "IPv4"));
+    network_interfaces.append(NetworkInterface("ethB", "IPv6"));
+
+    return network_interfaces
+
+def test_construct_from_file(config, recipients, network_interfaces):
     assert config.snort_log_path == '/var/log/snort/alert'
     assert config.alert_recipients == recipients
-    # Check expected network interfaces
+    assert config.network_interfaces == network_interfaces
     assert config.smtp_server == 'smtp.example.com'
     assert config.smtp_port == 587
     assert config.smtp_username == 'testuser'
@@ -111,6 +121,26 @@ def test_set_alert_recipients_wrong_type_in_list():
     with pytest.raises(ConfigValidationError):
         config.alert_recipients = a_list
 
+def test_set_network_interfaces(network_interfaces):
+    config = Configuration()
+    config.network_interfaces = network_interfaces
+
+def test_set_network_interfaces_empty_list():
+    config = Configuration()
+    with pytest.raises(ConfigValidationError):
+        config.network_interfaces = list()
+
+def test_set_network_interfaces_not_list():
+    config = Configuration()
+    with pytest.raises(ConfigValidationError):
+        config.network_interfaces = "hello"
+
+def test_set_network_interfaces_wrong_type_in_list():
+    config = Configuration()
+    a_list = [1,2]
+    with pytest.raises(ConfigValidationError):
+        config.network_interfaces = a_list
+
 def test_set_email_subject(config):
     config.email_subject = "AN EMAIL SUBJECT"
     assert config.email_subject == "AN EMAIL SUBJECT"
@@ -153,8 +183,6 @@ def test_set_suppress_duplicate_alerts(config):
 def test_set_suppress_duplicate_alerts_invalid_type(config):
     with pytest.raises(ConfigValidationError):
         config.suppress_duplicate_alerts = "hello"
-
-# TODO: TEST NETWORK INTERFACES
 
 def calc_sha256sum_of_file(file_name, block_size=65536):
     sha256 = hashlib.sha256()
