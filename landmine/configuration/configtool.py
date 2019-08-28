@@ -91,7 +91,8 @@ def smtp_dialog(d):
                        extra_button=True, extra_label="Set Password", insecure=True)
 
 def store_smtp_password(d):
-        password = show_smtp_password_dialog(d, fields[0], fields[2])
+        password = show_smtp_password_dialog(d, config.smtp_server, config.smtp_username)
+        config.smtp_password = password
 
 
 def show_smtp_password_dialog(d, host, username):
