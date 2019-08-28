@@ -1,4 +1,4 @@
-from landmine.configuration import configure
+from landmine.configuration import configtool
 from psutil import _common
 import psutil
 import pytest
@@ -36,7 +36,7 @@ def net_if_addrs():
 @pytest.fixture
 def network_if_data(monkeypatch):
     monkeypatch.setattr(psutil, "net_if_addrs", net_if_addrs)
-    return configure.get_network_if_data()
+    return configtool.get_network_if_data()
 
 
 def test_get_network_if_data_default_false(network_if_data):

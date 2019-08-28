@@ -33,6 +33,6 @@ setuptools.setup(
         'pytest-cov',
     ],
     entry_points={'console_scripts': ['landmine=landmine.landmine:run',
-                  'configure=landmine.configuration.configure:run']},
+                  'configtool=landmine.configuration.configtool:run']},
     package_data={'landmine.configuration': ['configspec.ini']},
 )
