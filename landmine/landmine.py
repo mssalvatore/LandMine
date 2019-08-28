@@ -82,7 +82,7 @@ def process_alert(config, alert_dedup, snort_alert):
     else:
         logging.warning("Not sending alerts: Sent count and sent time thresholds are exceeded. ")
 
-def run():
+def main():
     config = Configuration("./config.ini")
 
     alert_dedup = AlertDeduplicator(config.alert_threshold,

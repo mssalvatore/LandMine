@@ -35,7 +35,7 @@ def loop_dialog(d, dialog_callback, extra_callback=None, cancel_callback=None):
 def show_exception_msg(d, ex):
     d.msgbox("An error occurred while trying to save the configuration:\n\n%s" % str(ex), title="Error", height=10, width=72)
         
-def run():
+def main():
     d = Dialog(autowidgetsize=True)
     loop_dialog(d, main_menu_dialog, save_config)
     # TODO: cancel_callback(): Are you sure you want to overwite the config file?
