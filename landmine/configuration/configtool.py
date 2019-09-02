@@ -11,7 +11,7 @@ import sys
 
 config = Configuration()
 
-def loop_dialog(d, dialog_callback, extra_callback=None, cancel_callback=None):
+def loop_menu_dialog(d, dialog_callback, extra_callback=None, cancel_callback=None):
     show_dialog = True
     
     while show_dialog:
@@ -20,11 +20,11 @@ def loop_dialog(d, dialog_callback, extra_callback=None, cancel_callback=None):
 
             if code == d.OK:
                 dialog_callbacks[tag](d)
-            if code == d.EXTRA:
+            elif code == d.EXTRA:
                 if extra_callback is not None:
                     extra_callback(d)
                     #TODO: else raise exception
-            if code in (d.CANCEL, d.ESC):
+            elif code in (d.CANCEL, d.ESC):
                 # TODO: Check for unsaved changes and warn about discarding changes
                 if cancel_callback is not None:
                     cancel_callback()
@@ -37,7 +37,7 @@ def show_exception_msg(d, ex):
         
 def main():
     d = Dialog(autowidgetsize=True)
-    loop_dialog(d, main_menu_dialog, save_config)
+    loop_menu_dialog(d, main_menu_dialog, save_config)
     # TODO: cancel_callback(): Are you sure you want to overwite the config file?
     # TODO: cancel_callback(): Only save if there are changes, warn otherwise
 
@@ -69,7 +69,7 @@ def get_network_if_data():
     return if_choices
 
 def show_email_dialog(d):
-    loop_dialog(d, email_dialog)
+    loop_menu_dialog(d, email_dialog)
 
 def email_dialog(d):
     return d.menu(dc.email_menu_text,
@@ -78,17 +78,32 @@ def email_dialog(d):
                   choices=dc.email_menu_choices)
 
 def show_smtp_dialog(d):
-    loop_dialog(d, smtp_dialog, extra_callback=store_smtp_password)
+    show_dialog = True
+
+    while show_dialog:
+        try:
+            code, field_values = d.mixedform(dc.smtp_menu_text,
+                                             dc.smtp_menu_fields,
+                                             title=dc.smtp_menu_title,
+                                             backtitle=dc.smtp_menu_backtitle,
+                                             extra_button=True,
+                                             extra_label="Set Password",
+                                             insecure=True)
+
+            if code == d.OK:
+                show_dialog = False
+                # TODO: Store changes
+            elif code == d.EXTRA:
+                store_smtp_password(d)
+            elif code in (d.CANCEL, d.ESC):
+                # TODO: Check for unsaved changes and warn about discarding changes
+                # TODO: Discard any saved changes
+                show_dialog = False
+        except Exception as ex:
+            show_exception_msg(d, ex)
 
     #TODO: Validate port
     #TODO: Offer to send test email
-
-def smtp_dialog(d):
-    return d.mixedform(dc.smtp_menu_text,
-                       dc.smtp_menu_fields,
-                       title=dc.smtp_menu_title,
-                       backtitle=dc.smtp_menu_backtitle,
-                       extra_button=True, extra_label="Set Password", insecure=True)
 
 def store_smtp_password(d):
         password = show_smtp_password_dialog(d, config.smtp_server, config.smtp_username)
@@ -113,7 +128,7 @@ def show_smtp_password_dialog(d, host, username):
             return password1
 
 def show_recipients_dialog(d):
-    loop_dialog(d, recipients_dialog)
+    loop_menu_dialog(d, recipients_dialog)
 
 def recipients_dialog(d):
     return d.menu(dc.recipients_menu_text,
