@@ -46,7 +46,8 @@ def main_menu_dialog(d):
                   title=dc.main_menu_title,
                   backtitle=dc.main_menu_backtitle,
                   extra_button=True, extra_label="Save",
-                  choices=dc.main_menu_choices)
+                  choices=dc.main_menu_choices,
+                  cancel_label="Exit")
 
 
 def show_network_dialog(d):
